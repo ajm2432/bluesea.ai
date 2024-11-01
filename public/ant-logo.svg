@@ -1,0 +1,34 @@
+<!-- <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="40" height="40" rx="20" fill="#18181B"/>
+<g clip-path="url(#clip0_15_2080)">
+<path d="M21.7784 11.7207L28.3803 28.2797H32.0007L25.3988 11.7207H21.7784Z" fill="white"/>
+<path d="M14.1194 21.727L16.3783 15.9078L18.6373 21.727H14.1194ZM14.4856 11.7207L7.88477 28.2797H11.5756L12.9255 24.8023H19.8313L21.1811 28.2797H24.8719L18.2711 11.7207H14.4856Z" fill="white"/>
+</g>
+<defs>
+<clipPath id="clip0_15_2080">
+<rect width="24" height="18" fill="white" transform="translate(8 11)"/>
+</clipPath>
+</defs>
+</svg> -->
+
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="blue-marble-gradient" cx="50%" cy="50%" r="50%" fx="30%" fy="30%">
+      <stop offset="0%" style="stop-color:#1E90FF; stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00008B; stop-opacity:1" />
+    </radialGradient>
+    <linearGradient id="marble-swirls" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#1E90FF" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+  <!-- Background Circle -->
+  <circle cx="20" cy="20" r="20" fill="url(#blue-marble-gradient)" />
+  <!-- Marble Swirls -->
+  <path d="M10 15 C12 10, 18 10, 20 20 S30 30, 35 25" stroke="url(#marble-swirls)" stroke-width="1.5" fill="none"/>
+  <path d="M5 25 C10 20, 20 25, 25 15 S30 10, 35 20" stroke="url(#marble-swirls)" stroke-width="1.2" fill="none"/>
+  <!-- Light Reflection -->
+  <circle cx="13" cy="13" r="3" fill="white" opacity="0.7"/>
+</svg>
+
+
