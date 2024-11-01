@@ -2,8 +2,12 @@
 
 import React from 'react';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
+import { useTheme } from 'next-themes';
 
 export default function LoginForm({ onLogin }) {
+    const { theme } = useTheme();
+    const isDarkMode = theme === 'dark';
+
     return (
         <div style={styles.container}>
             <Formik
@@ -12,10 +16,7 @@ export default function LoginForm({ onLogin }) {
                     password: '',
                 }}
                 onSubmit={(values) => {
-                    console.log('Form data', values);
-                    // Simulate authentication
                     if (values.username && values.password) {
-                        // Call the onLogin function passed from the parent
                         onLogin();
                     }
                 }}
@@ -24,7 +25,14 @@ export default function LoginForm({ onLogin }) {
                     <Form style={styles.form}>
                         <div style={styles.titleContainer}>
                             <img src="/wave.png" alt="Wave" style={styles.logo} />
-                            <h2 style={styles.title}>BlueSea.ai</h2>
+                            <h2
+                                style={{
+                                    ...styles.title,
+                                    color: isDarkMode ? '#000' : '#333',
+                                }}
+                            >
+                                BlueSea.ai
+                            </h2>
                         </div>
                         <div style={styles.inputGroup}>
                             <Field id="username" name="username" placeholder="Username" style={styles.input} />
@@ -64,9 +72,9 @@ const styles = {
         marginBottom: '1rem',
     },
     logo: {
-        width: '30px', // Adjust the size as needed
+        width: '30px',
         height: '30px',
-        marginRight: '10px', // Space between the image and the title
+        marginRight: '10px',
     },
     title: {
         margin: 0,
