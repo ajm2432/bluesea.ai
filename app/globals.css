@@ -75,8 +75,8 @@
     border-radius: 50%; /* Ensure the image is rounded */
   }
   
-  .login_box {
-    width: 340px;
 
+  .login_box {
+    width: 540px;
     background-color: #fff;
 }

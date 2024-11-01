@@ -10,6 +10,8 @@
 <path d="M329.812 19.8895C329.812 8.22099 321.238 1.06077 307.182 1.06077H276.95V62.9392H290.21V38.7182H304.971L318.232 62.9392H332.906L318.223 36.8734C325.593 34.0402 329.812 28.0743 329.812 19.8895ZM290.21 12.9945H306.564C313.105 12.9945 316.552 15.3812 316.552 19.8895C316.552 24.3978 313.105 26.7845 306.564 26.7845H290.21V12.9945Z" fill="#FAFAF8"/>
 </svg> -->
 <svg width="570" height="100" viewBox="0 0 570 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- Add wave.png next to the text -->
+  <image href="wave.png" x="0" y="0" width="80" height="80" />
   <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="86" fill="#FAFAF8">
     BlueSea.ai
   </text>
