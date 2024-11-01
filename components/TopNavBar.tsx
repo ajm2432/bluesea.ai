@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import Image from "next/image";
 import { Moon, Sun, Check } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -44,7 +43,7 @@ const ColorCircle = ({
   </div>
 );
 
-const TopNavBar = () => {
+const TopNavBar = ({ onLogout }) => { // Accept onLogout as a prop
   const { theme, setTheme } = useTheme();
   const [colorTheme, setColorTheme] = useState<ThemeName>("blue");
   const [mounted, setMounted] = useState(false);
@@ -138,15 +137,9 @@ const TopNavBar = () => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        {/* <Link
-          href="https://github.com/anthropics/anthropic-quickstarts"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Button variant="outline" className="text-foreground">
-            Deploy your own
-          </Button>
-        </Link> */}
+        <Button variant="outline" onClick={onLogout}>
+          Logout
+        </Button>
       </div>
     </nav>
   );
