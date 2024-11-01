@@ -1,3 +1,14 @@
+# BlueSea.ai AI Helpdesk
+![preview](tutorial/bluesea-ai-demo.png)
+
+## Key Features
+
+-  AI-powered chat using Anthropic's Claude model
+-  Amazon Bedrock integration for contextual knowledge retrieval
+-  Real-time thinking & debug information display
+-  Knowledge base source visualization
+-  User mood detection & appropriate agent redirection
+-  Highly customizable UI with shadcn/ui components
 
 ##  Getting Started
 
