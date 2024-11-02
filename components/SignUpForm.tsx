@@ -4,7 +4,7 @@ import React from 'react';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import { useTheme } from 'next-themes';
 
-export default function LoginForm({ onLogin, onToggle }) {  // Accept onToggle as a prop
+export default function SignUpForm({ onSignUp, onConfirmSignUp, onBackToLogin }) { // Accept onBackToLogin as a prop
     const { theme } = useTheme();
     const isDarkMode = theme === 'dark';
 
@@ -14,11 +14,12 @@ export default function LoginForm({ onLogin, onToggle }) {  // Accept onToggle a
                 initialValues={{
                     username: '',
                     password: '',
+                    email: '', // Include email field for sign-up
                 }}
                 onSubmit={(values) => {
-                    // Pass username and password to onLogin
-                    if (values.username && values.password) {
-                        onLogin(values.username, values.password);
+                    // Pass username, password, and email to onSignUp
+                    if (values.username && values.password && values.email) {
+                        onSignUp(values.username, values.password, values.email);
                     }
                 }}
             >
@@ -36,20 +37,22 @@ export default function LoginForm({ onLogin, onToggle }) {  // Accept onToggle a
                             </h2>
                         </div>
                         <div style={styles.inputGroup}>
-                            <Field id="username" name="username" placeholder="Username" style={styles.input} />
-                            <ErrorMessage name="username" component="div" style={styles.error} />
+                            <Field type="email" id="email" name="email" placeholder="Email" style={styles.input} />
+                            <ErrorMessage name="email" component="div" style={styles.error} />
                         </div>
                         <div style={styles.inputGroup}>
                             <Field type="password" id="password" name="password" placeholder="Password" style={styles.input} />
                             <ErrorMessage name="password" component="div" style={styles.error} />
                         </div>
-                        <button type="submit" style={styles.button}>Login</button>
-                        <button onClick={onToggle} style={styles.toggleButton}>
-                Sign Up
+                        
+                        <button type="submit" style={styles.button}>Sign Up</button>
+                        <button onClick={onBackToLogin} style={styles.toggleButton}>
+                Back to Login
             </button>
                     </Form>
                 )}
             </Formik>
+            
         </div>
     );
 }
@@ -57,7 +60,6 @@ export default function LoginForm({ onLogin, onToggle }) {  // Accept onToggle a
 const styles = {
     container: {
         display: 'flex',
-        flexDirection: 'column',  // Ensure button is stacked below the form
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
