@@ -16,7 +16,7 @@ export default function ResetPasswordForm({ onSubmit }) {
                     confirmPassword: '',
                 }}
                 validate={(values) => {
-                    const errors = {};
+                    const errors = {}; // Initialize errors object
                     if (!values.newPassword) {
                         errors.newPassword = 'Required';
                     } else if (values.newPassword.length < 8) {
@@ -30,7 +30,8 @@ export default function ResetPasswordForm({ onSubmit }) {
                     return errors;
                 }}
                 onSubmit={(values) => {
-                    onSubmit(values.newPassword); // Only need the new password
+                    // Pass only the new password to onSubmit
+                    onSubmit(values.newPassword);
                 }}
             >
                 {() => (

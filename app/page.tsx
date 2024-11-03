@@ -16,14 +16,14 @@ export default function Home() {
     const [showSignUp, setShowSignUp] = useState(false);
     var cognitoidentityserviceprovider = new AWS.CognitoIdentityServiceProvider({ region: 'us-east-1' });
     const handleLogin = (username, password) => {
-      console.log('Attempting login with', { username, password });
+      console.log('Attempting login with', { username});
       var params = { 
           AuthFlow: "USER_PASSWORD_AUTH", 
           AuthParameters: {
               "PASSWORD": password, 
               "USERNAME": username
           }, 
-          ClientId: "27hk2v44t5rg3hi46fc2i6esf0"
+          ClientId: process.env.NEXT_PUBLIC_CLIENT_ID
       };
       
       cognitoidentityserviceprovider.initiateAuth(params, function(err, data) {
@@ -61,14 +61,14 @@ export default function Home() {
         setShowSignUp(!showSignUp); // Toggle between sign-up and login
     };
 
-    const handleNewPassword = (newPassword) => {
+    const handleNewPassword = (newPassword, givenName) => {
       const params = {
           ChallengeName: 'NEW_PASSWORD_REQUIRED',
-          ClientId: '27hk2v44t5rg3hi46fc2i6esf0',
+          ClientId: process.env.NEXT_PUBLIC_CLIENT_ID,
           Session: challengeSession,
           ChallengeResponses: {
               USERNAME: challengeParameters.USER_ID_FOR_SRP,
-              NEW_PASSWORD: newPassword
+              NEW_PASSWORD: newPassword,
           }
       };
   
