@@ -14,6 +14,7 @@ export default function Home() {
     const [showResetPassword, setShowResetPassword] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [showSignUp, setShowSignUp] = useState(false);
+    const [error, setError] = useState(null); 
     var cognitoidentityserviceprovider = new AWS.CognitoIdentityServiceProvider({ region: 'us-east-1' });
     const handleLogin = (username, password) => {
       console.log('Attempting login with', { username});
@@ -27,20 +28,23 @@ export default function Home() {
       };
       
       cognitoidentityserviceprovider.initiateAuth(params, function(err, data) {
-          if (err) {
-              console.log(err, err.stack); // an error occurred
-          } else {
-              if (data.ChallengeName === "NEW_PASSWORD_REQUIRED") {
-                  console.log("New password required.");
-                  setChallengeSession(data.Session); // store session for later
-                  setChallengeParameters(data.ChallengeParameters);
-                  setShowResetPassword(true); // Show reset password form
-              } else {
-                  console.log(data);
-                  setIsAuthenticated(true);
-              }
-          }
-      });
+        if (err) {
+            const errorMessage = err.message || "An unknown error occurred"; // Get error message
+            setError(errorMessage); // Set error state
+            console.log(err, err.stack); // an error occurred
+        } else {
+            if (data.ChallengeName === "NEW_PASSWORD_REQUIRED") {
+                console.log("New password required.");
+                setChallengeSession(data.Session); // store session for later
+                setChallengeParameters(data.ChallengeParameters);
+                setShowResetPassword(true); // Show reset password form
+            } else {
+                console.log(data);
+                setIsAuthenticated(true);
+            }
+        }
+    });
+    
   };
   
 
@@ -101,7 +105,7 @@ export default function Home() {
                           onBackToLogin={() => setShowSignUp(false)} 
                       />
                   ) : (
-                      <LoginForm onLogin={handleLogin} onToggle={toggleSignUp} />
+                      <LoginForm onLogin={handleLogin} error={error} />
                   )}
               </div>
           )}

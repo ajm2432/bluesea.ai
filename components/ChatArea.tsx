@@ -222,6 +222,19 @@ type KnowledgeBase = {
   name: string;
 };
 
+// Define a type for roles
+type Role = {
+  id: string;
+  name: string;
+};
+
+// Add roles data
+const roles: Role[] = [
+  { id: "role1", name: "User Role 1" },
+  { id: "role2", name: "User Role 2" },
+  { id: "role3", name: "User Role 3" },
+];
+
 const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   selectedModel,
   setSelectedModel,
@@ -230,77 +243,83 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   selectedKnowledgeBase,
   setSelectedKnowledgeBase,
   knowledgeBases,
-}) => (
-  <div className="p-0 flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 animate-fade-in">
-    <div className="flex items-center space-x-4 mb-2 sm:mb-0">
-      {showAvatar && (
-        <>
-          <Avatar className="w-10 h-10 border">
-            <AvatarImage
-              src="/wave.png"
-              alt="AI Assistant Avatar"
-              width={60}
-              height={60}
-              className="object-cover"
-            />
-            <AvatarFallback>AI</AvatarFallback>
-          </Avatar>
-          <div>
-            <h3 className="text-sm font-medium leading-none">Tidal Wave</h3>
-            <p className="text-sm text-muted-foreground">Support</p>
-          </div>
-        </>
-      )}
-    </div>
-    <div className="flex space-x-2 w-full sm:w-auto">
-      {/* <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-grow text-muted-foreground sm:flex-grow-0"
-          >
-            {models.find((m) => m.id === selectedModel)?.name}
-            <ChevronDown className="ml-2 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          {models.map((model) => (
-            <DropdownMenuItem
-              key={model.id}
-              onSelect={() => setSelectedModel(model.id)}
+}) => {
+  const [selectedRole, setSelectedRole] = useState(roles[0].id); // Set the default selected role
+
+  return (
+    <div className="p-0 flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 animate-fade-in">
+      <div className="flex items-center space-x-4 mb-2 sm:mb-0">
+        {showAvatar && (
+          <>
+            <Avatar className="w-10 h-10 border">
+              <AvatarImage
+                src="/wave.png"
+                alt="AI Assistant Avatar"
+                width={60}
+                height={60}
+                className="object-cover"
+              />
+              <AvatarFallback>AI</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="text-sm font-medium leading-none">Tidal Wave</h3>
+              <p className="text-sm text-muted-foreground">Support</p>
+            </div>
+          </>
+        )}
+      </div>
+      <div className="flex space-x-2 w-full sm:w-auto">
+        {/* Knowledge Base Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-grow text-muted-foreground sm:flex-grow-0"
             >
-              {model.name}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu> */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-grow text-muted-foreground  sm:flex-grow-0"
-          >
-            {knowledgeBases.find((kb) => kb.id === selectedKnowledgeBase)
-              ?.name || "Select KB"}
-            <ChevronDown className="ml-2 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          {knowledgeBases.map((kb) => (
-            <DropdownMenuItem
-              key={kb.id}
-              onSelect={() => setSelectedKnowledgeBase(kb.id)}
+              {knowledgeBases.find((kb) => kb.id === selectedKnowledgeBase)?.name || "Select KB"}
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {knowledgeBases.map((kb) => (
+              <DropdownMenuItem
+                key={kb.id}
+                onSelect={() => setSelectedKnowledgeBase(kb.id)}
+              >
+                {kb.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Role Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-grow text-muted-foreground sm:flex-grow-0"
             >
-              {kb.name}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
+              {roles.find((role) => role.id === selectedRole)?.name || "Select Role"}
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {roles.map((role) => (
+              <DropdownMenuItem
+                key={role.id}
+                onSelect={() => setSelectedRole(role.id)}
+              >
+                {role.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 function ChatArea() {
   const [messages, setMessages] = useState<Message[]>([]);

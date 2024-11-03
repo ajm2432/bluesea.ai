@@ -87,12 +87,20 @@ const TopNavBar = ({ onLogout }) => { // Accept onLogout as a prop
   return (
     <nav className="text-foreground p-4 flex justify-between items-center">
       <div className="font-bold text-xl flex gap-2 items-center">
-        <Image
-          src={theme === "dark" ? "/wordmark-dark.svg" : "/wordmark.svg"}
-          alt="Company Wordmark"
-          width={112}
-          height={20}
+      <Image
+          src="/wave.png" // Change to wave.png to match LoginForm
+          alt="Wave Logo"
+          width={30} // Change width to match LoginForm
+          height={30} // Change height to match LoginForm
         />
+        <h2
+          style={{
+            color: theme === "dark" ? "#fff" : "#333", // Change color to match LoginForm
+            margin: 0,
+          }}
+        >
+          BlueSea.ai
+        </h2>
       </div>
       <div className="flex items-center gap-2">
         <DropdownMenu>

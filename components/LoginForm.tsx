@@ -4,7 +4,7 @@ import React from 'react';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import { useTheme } from 'next-themes';
 
-export default function LoginForm({ onLogin, onToggle }) {  // Accept onToggle as a prop
+export default function LoginForm({ onLogin, onToggle, error }) {  // Accept error as a prop
     const { theme } = useTheme();
     const isDarkMode = theme === 'dark';
 
@@ -35,6 +35,7 @@ export default function LoginForm({ onLogin, onToggle }) {  // Accept onToggle a
                                 BlueSea.ai
                             </h2>
                         </div>
+                        {error && <div style={styles.error}>{error}</div>} {/* Display error message */}
                         <div style={styles.inputGroup}>
                             <Field id="username" name="username" placeholder="Username" style={styles.input} />
                             <ErrorMessage name="username" component="div" style={styles.error} />
@@ -54,7 +55,7 @@ export default function LoginForm({ onLogin, onToggle }) {  // Accept onToggle a
 const styles = {
     container: {
         display: 'flex',
-        flexDirection: 'column',  // Ensure button is stacked below the form
+        flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
@@ -103,6 +104,8 @@ const styles = {
     error: {
         color: 'red',
         fontSize: '12px',
+        marginBottom: '1rem', // Add margin for spacing
+        textAlign: 'center',
     },
     toggleButton: {
         marginTop: '1rem',
