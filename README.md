@@ -1,5 +1,5 @@
 # WavyLogic.ai AI Helpdesk
-![preview](tutorial/WavyLogic.ai-demo.png)
+![preview](tutorial/wavylogic.png)
 
 ## Key Features
 
