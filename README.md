@@ -1,5 +1,5 @@
-# BlueSea.ai AI Helpdesk
-![preview](tutorial/bluesea-ai-demo.png)
+# WavyLogic.ai AI Helpdesk
+![preview](tutorial/WavyLogic.ai-demo.png)
 
 ## Key Features
 

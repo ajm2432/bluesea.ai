@@ -32,7 +32,7 @@ export default function LoginForm({ onLogin, onToggle, error }) {  // Accept err
                                     color: isDarkMode ? '#000' : '#333',
                                 }}
                             >
-                                BlueSea.ai
+                                WavyLogic.ai
                             </h2>
                         </div>
                         {error && <div style={styles.error}>{error}</div>} {/* Display error message */}

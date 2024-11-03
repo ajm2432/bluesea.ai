@@ -44,7 +44,7 @@ export default function ResetPasswordForm({ onSubmit }) {
                                     color: isDarkMode ? '#000' : '#333',
                                 }}
                             >
-                                BlueSea.ai
+                                WavyLogic.ai
                             </h2>
                         </div>
                         <div style={styles.inputGroup}>

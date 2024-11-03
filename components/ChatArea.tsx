@@ -63,7 +63,7 @@ const UISelector = ({
   // Always set should_redirect to true
   const should_redirect = true;
 
-  if (should_redirect) {
+  if (redirectToAgent.should_redirect) {
     return (
       <Button
         size="sm"
@@ -235,6 +235,19 @@ const roles: Role[] = [
   { id: "role3", name: "User Role 3" },
 ];
 
+// Define a type for companies
+type Company = {
+  id: string;
+  name: string;
+};
+
+// Add companies data
+const companies: Company[] = [
+  { id: "company1", name: "Company 1" },
+];
+
+
+
 const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   selectedModel,
   setSelectedModel,
@@ -245,6 +258,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   knowledgeBases,
 }) => {
   const [selectedRole, setSelectedRole] = useState(roles[0].id); // Set the default selected role
+  const [selectedCompany, setSelectedCompany] = useState(companies[0].id); // Set the default selected role
 
   return (
     <div className="p-0 flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 animate-fade-in">
@@ -268,7 +282,31 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
           </>
         )}
       </div>
+      
       <div className="flex space-x-2 w-full sm:w-auto">
+        {/* Company Dropdown */}
+      <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-grow text-muted-foreground sm:flex-grow-0"
+            >
+              {companies.find((company) => company.id === selectedCompany)?.name || "Select Company"}
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {companies.map((company) => (
+            <DropdownMenuItem
+              key={company.id}
+              onSelect={() => setSelectedCompany(company.id)}
+            >
+              {company.name}
+            </DropdownMenuItem>
+          ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
         {/* Knowledge Base Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -335,7 +373,7 @@ function ChatArea() {
   );
 
   const knowledgeBases: KnowledgeBase[] = [
-    { id: "your-knowledge-base-id", name: "Your KB Name" },
+    { id: "your-knowledge-base-id", name: "KB Name" },
     // Add more knowledge bases as needed
   ];
 

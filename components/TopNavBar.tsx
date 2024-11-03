@@ -99,7 +99,7 @@ const TopNavBar = ({ onLogout }) => { // Accept onLogout as a prop
             margin: 0,
           }}
         >
-          BlueSea.ai
+          WavyLogic.ai
         </h2>
       </div>
       <div className="flex items-center gap-2">
