@@ -5,34 +5,49 @@ import TopNavBar from '../components/TopNavBar';
 import MainContent from '../components/app';
 import LoginForm from '../components/LoginForm';
 import SignUpForm from '../components/SignUpForm';
+import ResetPasswordForm from '../components/ResetPasswordForm';
+import AWS from 'aws-sdk';
 
 export default function Home() {
+    const [challengeSession, setChallengeSession] = useState(null);
+    const [challengeParameters, setChallengeParameters] = useState(null);
+    const [showResetPassword, setShowResetPassword] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [showSignUp, setShowSignUp] = useState(false);
-
-    // Mock credentials for demonstration
-    const mockCredentials = {
-        username: 'user123',
-        password: 'password123',
-    };
-
+    var cognitoidentityserviceprovider = new AWS.CognitoIdentityServiceProvider({ region: 'us-east-1' });
     const handleLogin = (username, password) => {
-        console.log('Attempting login with', { username, password });
-
-        // Simulate a login check
-        if (username === mockCredentials.username && password === mockCredentials.password) {
-            console.log('Login successful');
-            setIsAuthenticated(true);
-        } else {
-            console.error('Login failed: Incorrect username or password');
-        }
-    };
+      console.log('Attempting login with', { username, password });
+      var params = { 
+          AuthFlow: "USER_PASSWORD_AUTH", 
+          AuthParameters: {
+              "PASSWORD": password, 
+              "USERNAME": username
+          }, 
+          ClientId: "27hk2v44t5rg3hi46fc2i6esf0"
+      };
+      
+      cognitoidentityserviceprovider.initiateAuth(params, function(err, data) {
+          if (err) {
+              console.log(err, err.stack); // an error occurred
+          } else {
+              if (data.ChallengeName === "NEW_PASSWORD_REQUIRED") {
+                  console.log("New password required.");
+                  setChallengeSession(data.Session); // store session for later
+                  setChallengeParameters(data.ChallengeParameters);
+                  setShowResetPassword(true); // Show reset password form
+              } else {
+                  console.log(data);
+                  setIsAuthenticated(true);
+              }
+          }
+      });
+  };
+  
 
     const handleSignUp = (username, password, email) => {
         console.log('Attempting sign-up with', { username, email });
         // Simulate a sign-up process (for demo, just log the info)
         console.log('Sign-up successful for:', { username, email });
-        // Here you might want to reset showSignUp after signing up or confirming
     };
 
     const handleConfirmSignUp = (username, code) => {
@@ -46,28 +61,52 @@ export default function Home() {
         setShowSignUp(!showSignUp); // Toggle between sign-up and login
     };
 
-    return (
-        <div>
-            {isAuthenticated ? (
-                <div>
-                    <TopNavBar onLogout={() => setIsAuthenticated(false)} />
-                    <MainContent />
-                </div>
-            ) : (
-                <div style={styles.container}>
-                    {showSignUp ? (
-                        <SignUpForm 
-                            onSignUp={handleSignUp} 
-                            onConfirmSignUp={handleConfirmSignUp} 
-                            onBackToLogin={() => setShowSignUp(false)} // Pass the toggle function
-                        />
-                    ) : (
-                        <LoginForm onLogin={handleLogin} onToggle={toggleSignUp} />
-                    )}
-                </div>
-            )}
-        </div>
-    );
+    const handleNewPassword = (newPassword) => {
+      const params = {
+          ChallengeName: 'NEW_PASSWORD_REQUIRED',
+          ClientId: '27hk2v44t5rg3hi46fc2i6esf0',
+          Session: challengeSession,
+          ChallengeResponses: {
+              USERNAME: challengeParameters.USER_ID_FOR_SRP,
+              NEW_PASSWORD: newPassword
+          }
+      };
+  
+      cognitoidentityserviceprovider.respondToAuthChallenge(params, function(err, data) {
+          if (err) {
+              console.log(err, err.stack);
+          } else {
+              console.log("Password reset successful", data);
+              setIsAuthenticated(true); // Log the user in after password reset
+              setShowResetPassword(false); // Hide reset form
+          }
+      });
+  };
+  
+  return (
+      <div>
+          {isAuthenticated ? (
+              <div>
+                  <TopNavBar onLogout={() => setIsAuthenticated(false)} />
+                  <MainContent />
+              </div>
+          ) : showResetPassword ? (
+              <ResetPasswordForm onSubmit={handleNewPassword} />
+          ) : (
+              <div style={styles.container}>
+                  {showSignUp ? (
+                      <SignUpForm 
+                          onSignUp={handleSignUp} 
+                          onConfirmSignUp={handleConfirmSignUp} 
+                          onBackToLogin={() => setShowSignUp(false)} 
+                      />
+                  ) : (
+                      <LoginForm onLogin={handleLogin} onToggle={toggleSignUp} />
+                  )}
+              </div>
+          )}
+      </div>
+  );
 }
 
 const styles = {
