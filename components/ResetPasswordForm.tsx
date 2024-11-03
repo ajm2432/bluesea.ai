@@ -47,6 +47,18 @@ export default function ResetPasswordForm({ onSubmit }) {
                                 WavyLogic.ai
                             </h2>
                         </div>
+                        <div>
+                        <h2
+                                style={{
+                                    ...styles.title,
+                                    color: isDarkMode ? '#000' : '#333',
+                                    textAlign: 'center',
+                                    paddingBottom:'16px'
+                                }}
+                            >
+                                Please set a new password
+                            </h2>
+                        </div>
                         <div style={styles.inputGroup}>
                             <Field
                                 type="password"
