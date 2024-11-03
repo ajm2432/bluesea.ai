@@ -25,7 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+const should_redirect = true
 const TypedText = ({ text = "", delay = 5 }) => {
   const [displayedText, setDisplayedText] = useState("");
 
@@ -60,7 +60,10 @@ const UISelector = ({
 }: {
   redirectToAgent: { should_redirect: boolean; reason: string };
 }) => {
-  if (redirectToAgent.should_redirect) {
+  // Always set should_redirect to true
+  const should_redirect = true;
+
+  if (should_redirect) {
     return (
       <Button
         size="sm"
@@ -75,6 +78,8 @@ const UISelector = ({
             },
           });
           window.dispatchEvent(event);
+          // Redirect to the IT Support URL
+          window.location.href = "https://seasidesec.com"; 
         }}
       >
         <LifeBuoyIcon className="w-4 h-4" />
@@ -83,9 +88,8 @@ const UISelector = ({
     );
   }
 
-  return null;
+  return null; // You can return null or any other JSX if the condition is not met
 };
-
 const SuggestedQuestions = ({
   questions,
   onQuestionClick,

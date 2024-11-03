@@ -44,9 +44,6 @@ export default function LoginForm({ onLogin, onToggle }) {  // Accept onToggle a
                             <ErrorMessage name="password" component="div" style={styles.error} />
                         </div>
                         <button type="submit" style={styles.button}>Login</button>
-                        <button onClick={onToggle} style={styles.toggleButton}>
-                Sign Up
-            </button>
                     </Form>
                 )}
             </Formik>
