@@ -18,7 +18,7 @@
 4. Run the development server: `npm run dev`
 5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-## ⚙️ Configuration
+##  Configuration
 
 Create a `.env.local` file in the root directory with the following variables:
 

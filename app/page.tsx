@@ -4,74 +4,87 @@ import React, { useState } from 'react';
 import TopNavBar from '../components/TopNavBar';
 import MainContent from '../components/app';
 import LoginForm from '../components/LoginForm';
-import SignUpForm from '../components/SignUpForm';
 import ResetPasswordForm from '../components/ResetPasswordForm';
-import AWS from 'aws-sdk';
+import AWS, { CognitoIdentityServiceProvider, AWSError } from 'aws-sdk';
 
 export default function Home() {
-    const [challengeSession, setChallengeSession] = useState(null);
-    const [challengeParameters, setChallengeParameters] = useState(null);
+    const [challengeSession, setChallengeSession] = useState<string | null>(null);
+    const [challengeParameters, setChallengeParameters] = useState<any>(null);
     const [showResetPassword, setShowResetPassword] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [showSignUp, setShowSignUp] = useState(false);
-    const [error, setError] = useState(null); 
-    var cognitoidentityserviceprovider = new AWS.CognitoIdentityServiceProvider({ region: 'us-east-1' });
-    const handleLogin = (username, password) => {
-      console.log('Attempting login with', { username});
-      var params = { 
+    const [error, setError] = useState<string | null>(null); 
+    const cognitoidentityserviceprovider = new AWS.CognitoIdentityServiceProvider({ region: 'us-east-1' });
+
+    const handleLogin = async (username: string, password: string) => {
+      console.log('Attempting login with', { username });
+  
+      const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+      if (!clientId) {
+          setError("Client ID is not defined");
+          return;
+      }
+  
+      const params = { 
           AuthFlow: "USER_PASSWORD_AUTH", 
           AuthParameters: {
               "PASSWORD": password, 
               "USERNAME": username
           }, 
-          ClientId: process.env.NEXT_PUBLIC_CLIENT_ID
+          ClientId: clientId
       };
       
-      cognitoidentityserviceprovider.initiateAuth(params, function(err, data) {
-        if (err) {
-            const errorMessage = err.message || "An unknown error occurred"; // Get error message
-            setError(errorMessage); // Set error state
-            console.log(err, err.stack); // an error occurred
-        } else {
-            if (data.ChallengeName === "NEW_PASSWORD_REQUIRED") {
-                console.log("New password required.");
-                setChallengeSession(data.Session); // store session for later
-                setChallengeParameters(data.ChallengeParameters);
-                setShowResetPassword(true); // Show reset password form
-            } else {
-                console.log(data);
-                setIsAuthenticated(true);
-            }
-        }
-    });
-    
+      try {
+          const data = await cognitoidentityserviceprovider.initiateAuth(params).promise();
+          if (data.ChallengeName === "NEW_PASSWORD_REQUIRED") {
+              console.log("New password required.");
+              setChallengeSession(data.Session || null);
+              setChallengeParameters(data.ChallengeParameters);
+              setShowResetPassword(true);
+          } else {
+              console.log(data);
+              setIsAuthenticated(true);
+          }
+      } catch (err) {
+          const error = err as AWSError; // Type assertion
+          const errorMessage = error.message || "An unknown error occurred";
+          setError(errorMessage);
+          console.log(error, error.stack);
+      }
   };
   
+  
 
-    const handleSignUp = (username, password, email) => {
+    const handleSignUp = async (username: string, password: string, email: string) => {
         console.log('Attempting sign-up with', { username, email });
-        // Simulate a sign-up process (for demo, just log the info)
+        // Implement sign-up logic here
         console.log('Sign-up successful for:', { username, email });
     };
 
-    const handleConfirmSignUp = (username, code) => {
+    const handleConfirmSignUp = async (username: string, code: string) => {
         console.log('Confirming sign-up for', { username });
-        // For demo purposes, just log confirmation
+        // Implement confirmation logic here
         console.log('Confirmation successful for:', { username });
-        setShowSignUp(false); // Switch to login after confirmation
+        setShowSignUp(false);
     };
 
     const toggleSignUp = () => {
-        setShowSignUp(!showSignUp); // Toggle between sign-up and login
+        setShowSignUp(!showSignUp);
+        setError(null); // Clear error when toggling
     };
 
-    const handleNewPassword = (newPassword, givenName) => {
+    const handleNewPassword = (newPassword: string,) => {
+      if (!challengeSession) {
+          console.error("No challenge session available.");
+          return;
+      }
+  
       const params = {
           ChallengeName: 'NEW_PASSWORD_REQUIRED',
-          ClientId: process.env.NEXT_PUBLIC_CLIENT_ID,
-          Session: challengeSession,
+          ClientId: process.env.NEXT_PUBLIC_CLIENT_ID as string, // Ensure ClientId is a string
+          Session: challengeSession, // Ensure this is a string
           ChallengeResponses: {
-              USERNAME: challengeParameters.USER_ID_FOR_SRP,
+              USERNAME: challengeParameters?.USER_ID_FOR_SRP, // Use optional chaining
               NEW_PASSWORD: newPassword,
           }
       };
@@ -87,30 +100,25 @@ export default function Home() {
       });
   };
   
+  
+    
   return (
-      <div>
-          {isAuthenticated ? (
-              <div>
-                  <TopNavBar onLogout={() => setIsAuthenticated(false)} />
-                  <MainContent />
-              </div>
-          ) : showResetPassword ? (
-              <ResetPasswordForm onSubmit={handleNewPassword} />
-          ) : (
-              <div style={styles.container}>
-                  {showSignUp ? (
-                      <SignUpForm 
-                          onSignUp={handleSignUp} 
-                          onConfirmSignUp={handleConfirmSignUp} 
-                          onBackToLogin={() => setShowSignUp(false)} 
-                      />
-                  ) : (
-                      <LoginForm onLogin={handleLogin} error={error} />
-                  )}
-              </div>
-          )}
-      </div>
-  );
+    <div>
+        {isAuthenticated ? (
+            <div>
+                <TopNavBar onLogout={() => setIsAuthenticated(false)} />
+                <MainContent />
+            </div>
+        ) : showResetPassword ? (
+            <ResetPasswordForm onSubmit={handleNewPassword} />
+        ) : (
+            <div>
+                <LoginForm onLogin={handleLogin} error={error} />
+            </div>
+        )}
+    </div>
+);
+
 }
 
 const styles = {

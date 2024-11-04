@@ -6,8 +6,8 @@ import {
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-console.log("🔑 Have AWS AccessKey?", !!process.env.BAWS_ACCESS_KEY_ID);
-console.log("🔑 Have AWS Secret?", !!process.env.BAWS_SECRET_ACCESS_KEY);
+console.log(" Have AWS AccessKey?", !!process.env.BAWS_ACCESS_KEY_ID);
+console.log(" Have AWS Secret?", !!process.env.BAWS_SECRET_ACCESS_KEY);
 
 const bedrockClient = new BedrockAgentRuntimeClient({
   region: "us-east-1", // Make sure this matches your Bedrock region
@@ -76,7 +76,7 @@ export async function retrieveContext(
       })
       .slice(0, 1);
 
-    console.log("🔍 Parsed RAG Sources:", ragSources); // Debug log
+    console.log(" Parsed RAG Sources:", ragSources); // Debug log
 
     const context = rawResults
       .filter((res: any) => res.content && res.content.text)

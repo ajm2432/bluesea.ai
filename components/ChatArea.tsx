@@ -69,7 +69,7 @@ const UISelector = ({
         size="sm"
         className="mt-2 flex items-center space-x-2"
         onClick={() => {
-          console.log("🔥 Human Agent Connection Requested!", redirectToAgent);
+          console.log(" Human Agent Connection Requested!", redirectToAgent);
           const event = new CustomEvent("humanAgentRequested", {
             detail: {
               reason: redirectToAgent.reason || "Unknown",
@@ -149,7 +149,7 @@ const MessageContent = ({
 
     try {
       const result = JSON.parse(content);
-      console.log("🔍 Parsed Result:", result);
+      console.log(" Parsed Result:", result);
 
       if (
         result.response &&
@@ -387,15 +387,15 @@ function ChatArea() {
   };
 
   useEffect(() => {
-    console.log("🔍 Messages changed! Count:", messages.length);
+    console.log(" Messages changed! Count:", messages.length);
 
     const scrollToNewestMessage = () => {
       if (messagesEndRef.current) {
-        console.log("📜 Scrolling to newest message...");
+        console.log(" Scrolling to newest message...");
         const behavior = messages.length <= 2 ? "auto" : "smooth";
         messagesEndRef.current.scrollIntoView({ behavior, block: "end" });
       } else {
-        console.log("❌ No scroll anchor found!");
+        console.log(" No scroll anchor found!");
       }
     };
 
@@ -449,7 +449,7 @@ function ChatArea() {
     if (debugData) {
       try {
         const parsed = JSON.parse(debugData);
-        console.log("🔍 Server Debug:", parsed.msg, parsed.data);
+        console.log(" Server Debug:", parsed.msg, parsed.data);
       } catch (e) {
         console.error("Debug decode failed:", e);
       }
@@ -457,7 +457,7 @@ function ChatArea() {
   };
 
   const logDuration = (label: string, duration: number) => {
-    console.log(`⏱️ ${label}: ${duration.toFixed(2)}ms`);
+    console.log(` ${label}: ${duration.toFixed(2)}ms`);
   };
 
   const handleSubmit = async (
@@ -471,7 +471,7 @@ function ChatArea() {
     setIsLoading(true);
 
     const clientStart = performance.now();
-    console.log("🔄 Starting request: " + new Date().toISOString());
+    console.log(" Starting request: " + new Date().toISOString());
 
     const userMessage = {
       id: crypto.randomUUID(),
@@ -503,7 +503,7 @@ function ChatArea() {
     logDuration("Perceived Latency", placeholderDisplayed - clientStart);
 
     try {
-      console.log("➡️ Sending message to API:", userMessage.content);
+      console.log(" Sending message to API:", userMessage.content);
       const startTime = performance.now();
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -529,7 +529,7 @@ function ChatArea() {
       const endTime = performance.now();
       logDuration("JSON Parse Duration", endTime - responseReceived);
       logDuration("Total API Duration", endTime - startTime);
-      console.log("⬅️ Received response from API:", data);
+      console.log(" Received response from API:", data);
 
       const suggestedQuestionsHeader = response.headers.get(
         "x-suggested-questions",
@@ -542,7 +542,7 @@ function ChatArea() {
       if (ragHeader) {
         const ragProcessed = performance.now();
         logDuration(
-          "🔍 RAG Processing Duration",
+          " RAG Processing Duration",
           ragProcessed - responseReceived,
         );
         const sources = JSON.parse(ragHeader);

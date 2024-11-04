@@ -4,7 +4,12 @@ import React from 'react';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import { useTheme } from 'next-themes';
 
-export default function ResetPasswordForm({ onSubmit }) {
+// Define the type for the props
+interface ResetPasswordFormProps {
+    onSubmit: (newPassword: string) => void; // Specify the type for the onSubmit function
+}
+
+export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) {
     const { theme } = useTheme();
     const isDarkMode = theme === 'dark';
 
@@ -16,7 +21,7 @@ export default function ResetPasswordForm({ onSubmit }) {
                     confirmPassword: '',
                 }}
                 validate={(values) => {
-                    const errors = {}; // Initialize errors object
+                    const errors: { newPassword?: string; confirmPassword?: string } = {}; // Initialize errors object
                     if (!values.newPassword) {
                         errors.newPassword = 'Required';
                     } else if (values.newPassword.length < 8) {
@@ -55,7 +60,10 @@ export default function ResetPasswordForm({ onSubmit }) {
                                 placeholder="New Password"
                                 style={styles.input}
                             />
-                            <ErrorMessage name="newPassword" component="div" style={styles.error} />
+                            <div style={styles.error}>
+                            <ErrorMessage name="newPassword" component="div"/>
+                            </div>
+                            
                         </div>
                         <div style={styles.inputGroup}>
                             <Field
@@ -65,7 +73,10 @@ export default function ResetPasswordForm({ onSubmit }) {
                                 placeholder="Confirm Password"
                                 style={styles.input}
                             />
-                            <ErrorMessage name="confirmPassword" component="div" style={styles.error} />
+                            <div style={styles.error}>
+                            <ErrorMessage name="confirmPassword" component="div"  />
+                            </div>
+                            
                         </div>
                         <button type="submit" style={styles.button}>
                             Set New Password
@@ -80,7 +91,7 @@ export default function ResetPasswordForm({ onSubmit }) {
 const styles = {
     container: {
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'column' as const,
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',

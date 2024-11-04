@@ -56,7 +56,7 @@ const RightSidebar: React.FC = () => {
         debug?: DebugInfo;
       }>,
     ) => {
-      console.log("🔍 RAG event received:", event.detail);
+      console.log(" RAG event received:", event.detail);
       const { sources, query, debug } = event.detail;
 
       const shouldDisplaySources = debug?.context_used;
@@ -87,7 +87,7 @@ const RightSidebar: React.FC = () => {
         });
 
         console.log(
-          "🔍 Sources displayed:",
+          " Sources displayed:",
           shouldDisplaySources ? "YES" : "NO",
         );
       }

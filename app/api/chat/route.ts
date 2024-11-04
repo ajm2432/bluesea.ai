@@ -57,7 +57,7 @@ function sanitizeHeaderValue(value: string): string {
 const logTimestamp = (label: string, start: number) => {
   const timestamp = new Date().toISOString();
   const time = ((performance.now() - start) / 1000).toFixed(2);
-  console.log(`⏱️ [${timestamp}] ${label}: ${time}s`);
+  console.log(` [${timestamp}] ${label}: ${time}s`);
 };
 
 // Main POST request handler
@@ -69,13 +69,13 @@ export async function POST(req: Request) {
   const { messages, model, knowledgeBaseId } = await req.json();
   const latestMessage = messages[messages.length - 1].content;
 
-  console.log("📝 Latest Query:", latestMessage);
+  console.log(" Latest Query:", latestMessage);
   measureTime("User Input Received");
 
   // Prepare debug data
   const MAX_DEBUG_LENGTH = 1000;
   const debugData = sanitizeHeaderValue(
-    debugMessage("🚀 API route called", {
+    debugMessage(" API route called", {
       messagesReceived: messages.length,
       latestMessageLength: latestMessage.length,
       anthropicKeySlice: process.env.ANTHROPIC_API_KEY?.slice(0, 4) + "****",
@@ -89,7 +89,7 @@ export async function POST(req: Request) {
 
   // Attempt to retrieve context from RAG
   try {
-    console.log("🔍 Initiating RAG retrieval for query:", latestMessage);
+    console.log(" Initiating RAG retrieval for query:", latestMessage);
     measureTime("RAG Start");
     const result = await retrieveContext(latestMessage, knowledgeBaseId);
     retrievedContext = result.context;
@@ -97,18 +97,18 @@ export async function POST(req: Request) {
     ragSources = result.ragSources || [];
 
     if (!result.isRagWorking) {
-      console.warn("🚨 RAG Retrieval failed but did not throw!");
+      console.warn(" RAG Retrieval failed but did not throw!");
     }
 
     measureTime("RAG Complete");
-    console.log("🔍 RAG Retrieved:", isRagWorking ? "YES" : "NO");
+    console.log(" RAG Retrieved:", isRagWorking ? "YES" : "NO");
     console.log(
-      "✅ RAG retrieval completed successfully. Context:",
+      " RAG retrieval completed successfully. Context:",
       retrievedContext.slice(0, 100) + "...",
     );
   } catch (error) {
-    console.error("💀 RAG Error:", error);
-    console.error("❌ RAG retrieval failed for query:", latestMessage);
+    console.error(" RAG Error:", error);
+    console.error(" RAG retrieval failed for query:", latestMessage);
     retrievedContext = "";
     isRagWorking = false;
     ragSources = [];
@@ -210,7 +210,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    console.log(`🚀 Query Processing`);
+    console.log(` Query Processing`);
     measureTime("Claude Generation Start");
 
     const anthropicMessages = messages.map((msg: any) => ({
@@ -232,7 +232,7 @@ export async function POST(req: Request) {
     });
 
     measureTime("Claude Generation Complete");
-    console.log("✅ Message generation completed");
+    console.log(" Message generation completed");
 
     // Extract text content from the response
     const textContent = "{" + response.content
@@ -258,7 +258,7 @@ export async function POST(req: Request) {
 
     // Check if redirection to a human agent is needed
     if (responseWithId.redirect_to_agent?.should_redirect) {
-      console.log("🚨 AGENT REDIRECT TRIGGERED!");
+      console.log(" AGENT REDIRECT TRIGGERED!");
       console.log("Reason:", responseWithId.redirect_to_agent.reason);
     }
 
@@ -286,7 +286,7 @@ export async function POST(req: Request) {
     return apiResponse;
   } catch (error) {
     // Handle errors in AI response generation
-    console.error("💥 Error in message generation:", error);
+    console.error(" Error in message generation:", error);
     const errorResponse = {
       response:
         "Sorry, there was an issue processing your request. Please try again later.",

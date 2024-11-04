@@ -52,12 +52,12 @@ const LeftSidebar: React.FC = () => {
   useEffect(() => {
     const handleUpdateSidebar = (event: CustomEvent<ThinkingContent>) => {
       if (event.detail && event.detail.id) {
-        console.log("🔍 DEBUG: Sidebar Event:", event.detail);
+        console.log(" DEBUG: Sidebar Event:", event.detail);
         setThinkingContents((prev) => {
           const exists = prev.some((item) => item.id === event.detail.id);
           if (!exists) {
             console.log(
-              "📝 New thinking entry: ",
+              " New thinking entry: ",
               event.detail.content.slice(0, 50) + "...",
             ); // Shows first 50 chars
 
@@ -133,7 +133,7 @@ const LeftSidebar: React.FC = () => {
                       <span
                         className={`px-2 py-1 rounded-full ${getDebugPillColor(content.debug.context_used)}`}
                       >
-                        Context: {content.debug.context_used ? "✅" : "❌"}
+                        Context: {content.debug.context_used ? "" : ""}
                       </span>
                     </div>
                   )}

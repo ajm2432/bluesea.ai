@@ -4,7 +4,17 @@ import React from 'react';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import { useTheme } from 'next-themes';
 
-export default function LoginForm({ onLogin, onToggle, error }) {  // Accept error as a prop
+interface LoginFormProps {
+  onLogin?: (username: string, password: string) => void;
+  onToggle?: () => void;
+  error?: string | null;
+}
+
+export default function LoginForm({ 
+  onLogin = () => {}, 
+  onToggle = () => {}, 
+  error = null 
+}: LoginFormProps) {
     const { theme } = useTheme();
     const isDarkMode = theme === 'dark';
 
@@ -35,14 +45,20 @@ export default function LoginForm({ onLogin, onToggle, error }) {  // Accept err
                                 WavyLogic.ai
                             </h2>
                         </div>
-                        {error && <div style={styles.error}>{error}</div>} {/* Display error message */}
+                        {error && <div style={styles.error}>{error}</div>}
                         <div style={styles.inputGroup}>
                             <Field id="username" name="username" placeholder="Username" style={styles.input} />
-                            <ErrorMessage name="username" component="div" style={styles.error} />
+                            {/* Wrap ErrorMessage in a div for styling */}
+                            <div style={styles.error}>
+                                <ErrorMessage name="username" component="span" />
+                            </div>
                         </div>
                         <div style={styles.inputGroup}>
                             <Field type="password" id="password" name="password" placeholder="Password" style={styles.input} />
-                            <ErrorMessage name="password" component="div" style={styles.error} />
+                            {/* Wrap ErrorMessage in a div for styling */}
+                            <div style={styles.error}>
+                                <ErrorMessage name="password" component="span" />
+                            </div>
                         </div>
                         <button type="submit" style={styles.button}>Login</button>
                     </Form>
@@ -55,7 +71,7 @@ export default function LoginForm({ onLogin, onToggle, error }) {  // Accept err
 const styles = {
     container: {
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'column' as const,
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
@@ -104,8 +120,8 @@ const styles = {
     error: {
         color: 'red',
         fontSize: '12px',
-        marginBottom: '1rem', // Add margin for spacing
-        textAlign: 'center',
+        marginBottom: '1rem',
+        textAlign: 'center' as const,
     },
     toggleButton: {
         marginTop: '1rem',

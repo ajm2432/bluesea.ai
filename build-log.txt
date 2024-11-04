@@ -1,0 +1,21 @@
+
+> assistant@0.1.0 build
+> NEXT_PUBLIC_INCLUDE_LEFT_SIDEBAR=true NEXT_PUBLIC_INCLUDE_RIGHT_SIDEBAR=true next build
+
+/Users/austinmiller/Desktop/SeasideSec LLC/customer-support-agent/node_modules/next/dist/server/require-hook.js:35
+let resolve = process.env.NEXT_MINIMAL ? __non_webpack_require__.resolve : require.resolve;
+                                         ^
+
+ReferenceError: __non_webpack_require__ is not defined
+    at Object.<anonymous> (/Users/austinmiller/Desktop/SeasideSec LLC/customer-support-agent/node_modules/next/dist/server/require-hook.js:35:42)
+    at Module._compile (node:internal/modules/cjs/loader:1546:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1691:10)
+    at Module.load (node:internal/modules/cjs/loader:1317:32)
+    at Module._load (node:internal/modules/cjs/loader:1127:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:315:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:217:24)
+    at Module.require (node:internal/modules/cjs/loader:1339:12)
+    at require (node:internal/modules/helpers:126:16)
+    at Object.<anonymous> (/Users/austinmiller/Desktop/SeasideSec LLC/customer-support-agent/node_modules/next/dist/bin/next:6:1)
+
+Node.js v22.7.0

@@ -43,7 +43,11 @@ const ColorCircle = ({
   </div>
 );
 
-const TopNavBar = ({ onLogout }) => { // Accept onLogout as a prop
+interface TopNavBarProps {
+  onLogout: () => void; // Define the type for onLogout as a function with no parameters and no return value
+}
+
+const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout }) => {
   const { theme, setTheme } = useTheme();
   const [colorTheme, setColorTheme] = useState<ThemeName>("blue");
   const [mounted, setMounted] = useState(false);

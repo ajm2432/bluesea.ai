@@ -1,3 +1,14 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "rules": {
+    "no-warning-comments": "off",
+    "no-console": "off",
+    "no-unused-vars": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    "strict": "off",
+    "quotes": "off",
+    "semi": "off",
+    // Add all other rules you want to disable
+  }
 }
