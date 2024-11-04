@@ -13,37 +13,72 @@ export default function Home() {
     const [showResetPassword, setShowResetPassword] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [showSignUp, setShowSignUp] = useState(false);
-    const [error, setError] = useState<string | null>(null); 
+    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true); // Add loading state
     const cognitoidentityserviceprovider = new AWS.CognitoIdentityServiceProvider({ region: 'us-east-1' });
 
     // Use useEffect to check local storage for authentication status on mount
     useEffect(() => {
-        const authStatus = localStorage.getItem('isAuthenticated');
-        if (authStatus === 'true') {
+        const accessToken = localStorage.getItem('accessToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (accessToken && !isTokenExpired(accessToken)) {
             setIsAuthenticated(true);
+        } else if (refreshToken) {
+            // Try to refresh token if access token is expired
+            refreshAccessToken(refreshToken);
         }
         setLoading(false); // Stop loading after checking authentication
     }, []);
 
+    const isTokenExpired = (token: string): boolean => {
+        if (!token) return true;
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        const expirationTime = decoded.exp * 1000; // convert to milliseconds
+        return Date.now() > expirationTime;
+    };
+
+    const refreshAccessToken = async (refreshToken: string) => {
+        const params = {
+            AuthFlow: 'REFRESH_TOKEN_AUTH',
+            ClientId: process.env.NEXT_PUBLIC_CLIENT_ID,
+            AuthParameters: {
+                REFRESH_TOKEN: refreshToken,
+            },
+        };
+
+        try {
+            const data = await cognitoidentityserviceprovider.initiateAuth(params).promise();
+            const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
+
+            // Store new tokens
+            localStorage.setItem('accessToken', AccessToken);
+            localStorage.setItem('idToken', IdToken);
+            localStorage.setItem('refreshToken', RefreshToken);
+            setIsAuthenticated(true);
+        } catch (error) {
+            console.error('Error refreshing access token', error);
+            // Optionally handle logout or other recovery steps
+        }
+    };
+
     const handleLogin = async (username: string, password: string) => {
         console.log('Attempting login with', { username });
-    
+
         const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
         if (!clientId) {
             setError("Client ID is not defined");
             return;
         }
-    
-        const params = { 
-            AuthFlow: "USER_PASSWORD_AUTH", 
+
+        const params = {
+            AuthFlow: "USER_PASSWORD_AUTH",
             AuthParameters: {
-                "PASSWORD": password, 
+                "PASSWORD": password,
                 "USERNAME": username
-            }, 
+            },
             ClientId: clientId
         };
-        
+
         try {
             const data = await cognitoidentityserviceprovider.initiateAuth(params).promise();
             if (data.ChallengeName === "NEW_PASSWORD_REQUIRED") {
@@ -53,8 +88,13 @@ export default function Home() {
                 setShowResetPassword(true);
             } else {
                 console.log(data);
+                const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
+
+                // Store tokens
+                localStorage.setItem('accessToken', AccessToken);
+                localStorage.setItem('idToken', IdToken);
+                localStorage.setItem('refreshToken', RefreshToken);
                 setIsAuthenticated(true);
-                localStorage.setItem('isAuthenticated', 'true'); // Save authentication status
             }
         } catch (err) {
             const error = err as AWSError; // Type assertion
@@ -66,6 +106,9 @@ export default function Home() {
 
     const handleLogout = () => {
         setIsAuthenticated(false);
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('idToken');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('isAuthenticated'); // Remove authentication status
     };
 
@@ -77,10 +120,10 @@ export default function Home() {
 
         const params = {
             ChallengeName: 'NEW_PASSWORD_REQUIRED',
-            ClientId: process.env.NEXT_PUBLIC_CLIENT_ID as string, // Ensure ClientId is a string
-            Session: challengeSession, // Ensure this is a string
+            ClientId: process.env.NEXT_PUBLIC_CLIENT_ID as string,
+            Session: challengeSession,
             ChallengeResponses: {
-                USERNAME: challengeParameters?.USER_ID_FOR_SRP, // Use optional chaining
+                USERNAME: challengeParameters?.USER_ID_FOR_SRP,
                 NEW_PASSWORD: newPassword,
             }
         };
@@ -90,9 +133,14 @@ export default function Home() {
                 console.log(err, err.stack);
             } else {
                 console.log("Password reset successful", data);
-                setIsAuthenticated(true); // Log the user in after password reset
-                localStorage.setItem('isAuthenticated', 'true'); // Save authentication status
-                setShowResetPassword(false); // Hide reset form
+                const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
+
+                // Store tokens
+                localStorage.setItem('accessToken', AccessToken);
+                localStorage.setItem('idToken', IdToken);
+                localStorage.setItem('refreshToken', RefreshToken);
+                setIsAuthenticated(true);
+                setShowResetPassword(false);
             }
         });
     };
