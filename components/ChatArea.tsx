@@ -230,9 +230,9 @@ type Role = {
 
 // Add roles data
 const roles: Role[] = [
-  { id: "role1", name: "User Role 1" },
-  { id: "role2", name: "User Role 2" },
-  { id: "role3", name: "User Role 3" },
+  { id: "role1", name: "HR" },
+  { id: "role2", name: "IT" },
+  { id: "role3", name: "Finance" },
 ];
 
 // Define a type for companies
@@ -243,7 +243,7 @@ type Company = {
 
 // Add companies data
 const companies: Company[] = [
-  { id: "company1", name: "Company 1" },
+  { id: "company1", name: "Google" },
 ];
 
 

@@ -6,7 +6,7 @@
     "node": ">=18.17.0"
   },
   "scripts": {
-    "dev": "NEXT_PUBLIC_INCLUDE_LEFT_SIDEBAR=true NEXT_PUBLIC_INCLUDE_RIGHT_SIDEBAR=true next dev",
+    "dev": "cross-env NEXT_PUBLIC_INCLUDE_LEFT_SIDEBAR=true NEXT_PUBLIC_INCLUDE_RIGHT_SIDEBAR=true next dev",
     "build": "NEXT_PUBLIC_INCLUDE_LEFT_SIDEBAR=true NEXT_PUBLIC_INCLUDE_RIGHT_SIDEBAR=true next build",
     "start": "next start",
     "lint": "next lint",
@@ -35,6 +35,7 @@
     "clsx": "^2.1.1",
     "docx": "^9.0.2",
     "formidable": "^3.5.2",
+    "cross-env": "^7.0.3",
     "formik": "^2.4.6",
     "lucide-react": "^0.417.0",
     "mammoth": "^1.8.0",
