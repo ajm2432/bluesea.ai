@@ -21,7 +21,7 @@ export default function RootLayout({
       <body className={`${inter.className} flex flex-col h-full`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
