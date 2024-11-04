@@ -2,6 +2,7 @@
 const nextConfig = {
   // Disable SWC minification
   swcMinify: false,
+  distDir: 'build',
 
   experimental: {
     serverComponentsExternalPackages: ["@aws-sdk/client-bedrock-agent-runtime"],
@@ -10,7 +11,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  
+
   webpack: (config, { dev, isServer }) => {
     // Existing AWS configuration
     if (isServer) {
