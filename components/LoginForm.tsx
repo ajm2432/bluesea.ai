@@ -16,7 +16,7 @@ export default function LoginForm({
   error = null 
 }: LoginFormProps) {
     const { theme } = useTheme();
-    const isDarkMode = theme === 'light';
+    const isDarkMode = theme === 'dark';
 
     return (
         <div style={styles.container}>

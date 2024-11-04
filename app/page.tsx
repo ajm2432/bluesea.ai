@@ -44,7 +44,7 @@ export default function Home() {
   
       const params = {
           AuthFlow: 'REFRESH_TOKEN_AUTH',
-          ClientId: clientId, // Now guaranteed to be a string
+          ClientId: clientId,
           AuthParameters: {
               REFRESH_TOKEN: refreshToken,
           },
@@ -186,9 +186,13 @@ export default function Home() {
   
   
 
-    if (loading) {
-        return <div>Loading...</div>;
-    }
+  if (loading) {
+    return (
+        <div style={styles.loadingContainer}>
+            <img src="/wave.png" alt="Loading logo" style={styles.logo} />
+        </div>
+    );
+}
 
     return (
         <div>
@@ -207,3 +211,25 @@ export default function Home() {
         </div>
     );
 }
+
+const styles = {
+  loadingContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      backgroundColor: '#f0f0f0',
+  },
+  logo: {
+      width: '100px',
+      animation: 'spin 2s linear infinite',
+  },
+  '@keyframes spin': {
+      '0%': {
+          transform: 'rotate(0deg)',
+      },
+      '100%': {
+          transform: 'rotate(360deg)',
+      },
+  },
+};
