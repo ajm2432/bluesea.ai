@@ -14,6 +14,7 @@ import {
   BookOpenText,
   ChevronDown,
   Send,
+  Upload,
 } from "lucide-react";
 import "highlight.js/styles/atom-one-dark.css";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -738,45 +739,51 @@ function ChatArea() {
           )}
         </div>
       </CardContent>
-
       <CardFooter className="p-4 pt-0">
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col w-full relative bg-background border rounded-xl focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
-        >
-          <Textarea
-            value={input}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Type your message here..."
-            disabled={isLoading}
-            className="resize-none min-h-[44px] bg-background  border-0 p-3 rounded-xl shadow-none focus-visible:ring-0"
-            rows={1}
-          />
-          <div className="flex justify-between items-center p-3">
-            <div>
-              <a
-                className="w-auto h-[14px] mt-1"
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={isLoading || input.trim() === ""}
-              className="gap-2"
-              size="sm"
-            >
-              {isLoading ? (
-                <div className="animate-spin h-5 w-5 border-t-2 border-white rounded-full" />
-              ) : (
-                <>
-                  Send Message
-                  <Send className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </div>
-        </form>
-      </CardFooter>
+  <form
+    onSubmit={handleSubmit}
+    className="flex flex-col w-full relative bg-background border rounded-xl focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
+  >
+    <Textarea
+      value={input}
+      onChange={handleInputChange}
+      onKeyDown={handleKeyDown}
+      placeholder="Type your message here..."
+      disabled={isLoading}
+      className="resize-none min-h-[44px] bg-background border-0 p-3 rounded-xl shadow-none focus-visible:ring-0"
+      rows={1}
+    />
+    <div className="flex justify-between items-center p-3">
+      {/* Upload Button on the Left Side */}
+      <label htmlFor="file-upload" className="flex items-center cursor-pointer text-muted-foreground hover:text-primary">
+      <Upload className="h-6 w-6" />
+      </label>
+      <input
+        id="file-upload"
+        type="file"
+        accept=".txt,.docx"
+        className="hidden"
+      />
+
+      {/* Send Message Button on the Right Side */}
+      <Button
+        type="submit"
+        disabled={isLoading || input.trim() === ""}
+        className="gap-2"
+        size="sm"
+      >
+        {isLoading ? (
+          <div className="animate-spin h-5 w-5 border-t-2 border-white rounded-full" />
+        ) : (
+          <>
+            Send Message
+            <Send className="h-4 w-4" />
+          </>
+        )}
+      </Button>
+    </div>
+  </form>
+</CardFooter>
     </Card>
   );
 }
