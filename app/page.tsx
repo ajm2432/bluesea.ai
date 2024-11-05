@@ -10,7 +10,7 @@ import AWS, { CognitoIdentityServiceProvider, AWSError } from 'aws-sdk';
 export default function Home() {
     const [challengeSession, setChallengeSession] = useState<string | null>(null);
     const [challengeParameters, setChallengeParameters] = useState<any>(null);
-    const [showResetPassword, setShowResetPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -97,7 +97,7 @@ export default function Home() {
             console.log("New password required.");
             setChallengeSession(data.Session || null);
             setChallengeParameters(data.ChallengeParameters);
-            setShowResetPassword(true);
+            setShowNewPassword(true);
         } else if (data.AuthenticationResult) {
             console.log(data);
             const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
@@ -201,7 +201,7 @@ export default function Home() {
                     <TopNavBar onLogout={handleLogout} />
                     <MainContent />
                 </div>
-            ) : showResetPassword ? (
+            ) : showNewPassword ? (
                 <NewPasswordForm onSubmit={handleNewPassword} />
             ) : (
                 <div>
