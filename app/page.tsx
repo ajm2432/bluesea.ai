@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import TopNavBar from '../components/TopNavBar';
 import MainContent from '../components/app';
 import LoginForm from '../components/LoginForm';
-import ResetPasswordForm from '../components/ResetPasswordForm';
+import NewPasswordForm from '../components/NewPasswordForm';
 import AWS, { CognitoIdentityServiceProvider, AWSError } from 'aws-sdk';
 
 export default function Home() {
@@ -202,7 +202,7 @@ export default function Home() {
                     <MainContent />
                 </div>
             ) : showResetPassword ? (
-                <ResetPasswordForm onSubmit={handleNewPassword} />
+                <NewPasswordForm onSubmit={handleNewPassword} />
             ) : (
                 <div>
                     <LoginForm onLogin={handleLogin} error={error} />
