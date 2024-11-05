@@ -48,6 +48,7 @@ export default function LoginForm({
                         {error && <div style={styles.error}>{error}</div>}
                         <div style={styles.inputGroup}>
                             <Field id="username" name="username" placeholder="Username" style={styles.input} />
+                       
                             {/* Wrap ErrorMessage in a div for styling */}
                             <div style={styles.error}>
                                 <ErrorMessage name="username" component="span" />
@@ -60,7 +61,13 @@ export default function LoginForm({
                                 <ErrorMessage name="password" component="span" />
                             </div>
                         </div>
-                        <button type="submit" style={styles.button}>Login</button>
+                        <button type="submit" style={styles.button}>Login</button> 
+                        <div>
+                        <button type="submit" style={styles.button}>Forgot Password?</button> 
+                        </div>
+
+                       
+                    
                     </Form>
                 )}
             </Formik>
@@ -113,6 +120,7 @@ const styles = {
         borderRadius: '4px',
         border: 'none',
         backgroundColor: '#007bff',
+        marginBottom: '16px',
         color: 'white',
         fontSize: '16px',
         cursor: 'pointer',

@@ -71,7 +71,8 @@ export default function Home() {
           console.error('Error refreshing access token', error);
       }
   };
-  
+  //Copy newpasswordform.tsx in componets, copy and rename to resetpasswordform.tsx edit resetpasswordform to have another value to have a confirmation code
+  ///starting point for the UI
 
   const handleLogin = async (username: string, password: string) => {
     console.log('Attempting login with', { username });
