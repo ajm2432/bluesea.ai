@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import { useTheme } from 'next-themes';
 
 interface LoginFormProps {
   onLogin?: (username: string, password: string) => void;
-  onToggle?: () => void; // Callback for Forgot Password
+  onToggle?: (username: string) => void; // Callback for Forgot Password
   error?: string | null;
 }
 
@@ -17,6 +17,7 @@ export default function LoginForm({
 }: LoginFormProps) {
     const { theme } = useTheme();
     const isDarkMode = theme === 'dark';
+    const [forgotPasswordError, setForgotPasswordError] = useState<string | null>(null);
 
     return (
         <div style={styles.container}>
@@ -32,7 +33,7 @@ export default function LoginForm({
                     }
                 }}
             >
-                {() => (
+                {({ values }) => (
                     <Form style={styles.form}>
                         <div style={styles.titleContainer}>
                             <img src="/wave.png" alt="Wave" style={styles.logo} />
@@ -59,7 +60,23 @@ export default function LoginForm({
                             </div>
                         </div>
                         <button type="submit" style={styles.button}>Login</button> 
-                        <button type="button" onClick={onToggle} style={styles.button}>Forgot Password?</button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (values.username) {
+                                    setForgotPasswordError(null);
+                                    onToggle(values.username);
+                                } else {
+                                    setForgotPasswordError("Please enter your username to reset your password.");
+                                }
+                            }}
+                            style={styles.button}
+                        >
+                            Forgot Password?
+                        </button>
+                        {forgotPasswordError && (
+                            <div style={styles.error}>{forgotPasswordError}</div>
+                        )}
                     </Form>
                 )}
             </Formik>

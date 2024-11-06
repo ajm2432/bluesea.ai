@@ -6,7 +6,7 @@ import { useTheme } from 'next-themes';
 
 // Define the type for the props
 interface ResetPasswordFormProps {
-    onSubmit: (newPassword: string) => void; // Specify the type for the onSubmit function
+    onSubmit: (newPassword: string, username: string, code: string) => void; // Specify the type for the onSubmit function
 }
 
 export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) {
@@ -19,6 +19,8 @@ export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) 
                 initialValues={{
                     newPassword: '',
                     confirmPassword: '',
+                    username: '',
+                    code: '',
                 }}
                 validate={(values) => {
                     const errors: { newPassword?: string; confirmPassword?: string } = {}; // Initialize errors object
@@ -36,7 +38,7 @@ export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) 
                 }}
                 onSubmit={(values) => {
                     // Pass only the new password to onSubmit
-                    onSubmit(values.newPassword);
+                    onSubmit(values.newPassword, values.code, values.username);
                 }}
             >
                 {() => (
@@ -63,6 +65,19 @@ export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) 
                             >
                                 Please set a new password
                             </h2>
+                        </div>
+                        <div style={styles.inputGroup}>
+                            <Field
+                                type="text"
+                                id="code"
+                                name="code"
+                                placeholder="Verification Code"
+                                style={styles.input}
+                            />
+                            <div style={styles.error}>
+                            <ErrorMessage name="newPassword" component="div"/>
+                            </div>
+                            
                         </div>
                         <div style={styles.inputGroup}>
                             <Field

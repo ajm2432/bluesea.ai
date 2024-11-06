@@ -7,6 +7,7 @@ import LoginForm from '../components/LoginForm';
 import NewPasswordForm from '../components/NewPasswordForm';
 import ResetPasswordForm from '../components/ResetPasswordForm';
 import AWS, { CognitoIdentityServiceProvider, AWSError } from 'aws-sdk';
+import { UNSTABLE_REVALIDATE_RENAME_ERROR } from 'next/dist/lib/constants';
 
 export default function Home() {
     const [challengeSession, setChallengeSession] = useState<string | null>(null);
@@ -187,10 +188,36 @@ export default function Home() {
       }
   };
 
-  const handleForgotPassword = () => {
+  const switchForgotPassword = async (username: string) => {
     setShowResetPassword(true); // Switch to ResetPasswordForm view
+    const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+    if (!clientId) {
+        setError("Client ID is not defined");
+        return;
+    }
+
+    const params = { // ForgotPasswordRequest
+      ClientId: clientId, // required
+      Username: username // required
+    };
+
+    try {
+      const data = await cognitoidentityserviceprovider.forgotPassword(params).promise();
+  } catch (err) {
+      if (err instanceof Error) { // Type guard to ensure err is of type Error
+          console.error("Error resetting password:", err);
+          setError(err.message || "An error occurred while resetting the password.");
+      } else {
+          console.error("Unexpected error resetting password:", err);
+          setError("An unexpected error occurred while resetting the password.");
+      }
+  }
+    
 };
   
+const handleForgotPassword = async () =>  {
+  
+};
   
 
   if (loading) {
@@ -214,7 +241,7 @@ export default function Home() {
                 <NewPasswordForm onSubmit={handleNewPassword} />
             ) : (
                 <div>
-                    <LoginForm onLogin={handleLogin} onToggle={handleForgotPassword} error={error} />
+                    <LoginForm onLogin={handleLogin} onToggle={switchForgotPassword} error={error} />
                 </div>
             )}
         </div>
