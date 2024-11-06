@@ -130,6 +130,8 @@ export default function Home() {
 
     const handleLogout = () => {
         setIsAuthenticated(false);
+        setShowResetPassword(false);
+        setShowNewPassword(false);
         localStorage.removeItem('accessToken');
         localStorage.removeItem('idToken');
         localStorage.removeItem('refreshToken');
