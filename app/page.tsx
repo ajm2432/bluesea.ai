@@ -5,12 +5,14 @@ import TopNavBar from '../components/TopNavBar';
 import MainContent from '../components/app';
 import LoginForm from '../components/LoginForm';
 import NewPasswordForm from '../components/NewPasswordForm';
+import ResetPasswordForm from '../components/ResetPasswordForm';
 import AWS, { CognitoIdentityServiceProvider, AWSError } from 'aws-sdk';
 
 export default function Home() {
     const [challengeSession, setChallengeSession] = useState<string | null>(null);
     const [challengeParameters, setChallengeParameters] = useState<any>(null);
     const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showResetPassword, setShowResetPassword] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
@@ -184,6 +186,10 @@ export default function Home() {
           }
       }
   };
+
+  const handleForgotPassword = () => {
+    setShowResetPassword(true); // Switch to ResetPasswordForm view
+};
   
   
 
@@ -202,11 +208,13 @@ export default function Home() {
                     <TopNavBar onLogout={handleLogout} />
                     <MainContent />
                 </div>
+                ) : showResetPassword ? (
+                  <ResetPasswordForm onSubmit={handleForgotPassword} />
             ) : showNewPassword ? (
                 <NewPasswordForm onSubmit={handleNewPassword} />
             ) : (
                 <div>
-                    <LoginForm onLogin={handleLogin} error={error} />
+                    <LoginForm onLogin={handleLogin} onToggle={handleForgotPassword} error={error} />
                 </div>
             )}
         </div>

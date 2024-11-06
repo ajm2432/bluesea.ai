@@ -362,6 +362,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 
 function ChatArea() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [file, setFile] = useState<File | null>(null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showHeader, setShowHeader] = useState(false);
@@ -502,93 +503,115 @@ function ChatArea() {
 
     const placeholderDisplayed = performance.now();
     logDuration("Perceived Latency", placeholderDisplayed - clientStart);
-
+    
     try {
-      console.log(" Sending message to API:", userMessage.content);
-      const startTime = performance.now();
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...messages, userMessage],
-          model: selectedModel,
-          knowledgeBaseId: selectedKnowledgeBase,
-        }),
-      });
-
-      const responseReceived = performance.now();
-      logDuration("Full Round Trip", responseReceived - startTime);
-      logDuration("Network Duration", responseReceived - startTime);
-
-      decodeDebugData(response);
-
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      const endTime = performance.now();
-      logDuration("JSON Parse Duration", endTime - responseReceived);
-      logDuration("Total API Duration", endTime - startTime);
-      console.log(" Received response from API:", data);
-
-      const suggestedQuestionsHeader = response.headers.get(
-        "x-suggested-questions",
-      );
-      if (suggestedQuestionsHeader) {
-        data.suggested_questions = JSON.parse(suggestedQuestionsHeader);
-      }
-
-      const ragHeader = response.headers.get("x-rag-sources");
-      if (ragHeader) {
-        const ragProcessed = performance.now();
-        logDuration(
-          " RAG Processing Duration",
-          ragProcessed - responseReceived,
-        );
-        const sources = JSON.parse(ragHeader);
-        window.dispatchEvent(
-          new CustomEvent("updateRagSources", {
+      // Check if a PDF file is uploaded
+      if (file && file.type === 'application/pdf') {
+        // Create a URL for the file (using URL.createObjectURL)
+        const fileUrl = URL.createObjectURL(file);
+        
+        // Optionally: Save the file URL to local storage or session storage
+        // You could also save the file directly to IndexedDB or some local database
+        localStorage.setItem('uploadedPdfUrl', fileUrl); // Save URL in local storage
+        
+        // Send the file URL and query to uploadPdf API
+        const response = await fetch('/api/uploadPdf', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pdfUrl: fileUrl, query: input }),
+        });
+        
+        if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+        const data = await response.json();
+        
+        // Update messages with API response
+        setMessages((prevMessages) => {
+          const newMessages = [...prevMessages];
+          newMessages[newMessages.length - 1] = {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: JSON.stringify(data),
+          };
+          return newMessages;
+        });
+      } else {
+        console.log("Sending message to API:", userMessage.content);
+        const startTime = performance.now();
+    
+        // Standard chat message API request
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: [...messages, userMessage],
+            model: selectedModel,
+            knowledgeBaseId: selectedKnowledgeBase,
+          }),
+        });
+    
+        const responseReceived = performance.now();
+        logDuration("Full Round Trip", responseReceived - startTime);
+        logDuration("Network Duration", responseReceived - startTime);
+    
+        decodeDebugData(response);
+    
+        if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+        
+        const data = await response.json();
+        const endTime = performance.now();
+        logDuration("JSON Parse Duration", endTime - responseReceived);
+        logDuration("Total API Duration", endTime - startTime);
+        console.log("Received response from API:", data);
+    
+        const suggestedQuestionsHeader = response.headers.get("x-suggested-questions");
+        if (suggestedQuestionsHeader) {
+          data.suggested_questions = JSON.parse(suggestedQuestionsHeader);
+        }
+    
+        const ragHeader = response.headers.get("x-rag-sources");
+        if (ragHeader) {
+          const ragProcessed = performance.now();
+          logDuration("RAG Processing Duration", ragProcessed - responseReceived);
+          const sources = JSON.parse(ragHeader);
+          window.dispatchEvent(new CustomEvent("updateRagSources", {
             detail: {
               sources,
               query: userMessage.content,
               debug: data.debug,
             },
-          }),
-        );
-      }
-
-      const readyToRender = performance.now();
-      logDuration("Response Processing", readyToRender - responseReceived);
-
-      setMessages((prevMessages) => {
-        const newMessages = [...prevMessages];
-        const lastIndex = newMessages.length - 1;
-        newMessages[lastIndex] = {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: JSON.stringify(data),
-        };
-        return newMessages;
-      });
-
-      const sidebarEvent = new CustomEvent("updateSidebar", {
-        detail: {
-          id: data.id,
-          content: data.thinking?.trim(),
-          user_mood: data.user_mood,
-          debug: data.debug,
-          matched_categories: data.matched_categories,
-        },
-      });
-      window.dispatchEvent(sidebarEvent);
-
-      if (data.redirect_to_agent && data.redirect_to_agent.should_redirect) {
-        window.dispatchEvent(
-          new CustomEvent("agentRedirectRequested", {
+          }));
+        }
+    
+        const readyToRender = performance.now();
+        logDuration("Response Processing", readyToRender - responseReceived);
+    
+        setMessages((prevMessages) => {
+          const newMessages = [...prevMessages];
+          const lastIndex = newMessages.length - 1;
+          newMessages[lastIndex] = {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: JSON.stringify(data),
+          };
+          return newMessages;
+        });
+    
+        const sidebarEvent = new CustomEvent("updateSidebar", {
+          detail: {
+            id: data.id,
+            content: data.thinking?.trim(),
+            user_mood: data.user_mood,
+            debug: data.debug,
+            matched_categories: data.matched_categories,
+          },
+        });
+        window.dispatchEvent(sidebarEvent);
+    
+        if (data.redirect_to_agent && data.redirect_to_agent.should_redirect) {
+          window.dispatchEvent(new CustomEvent("agentRedirectRequested", {
             detail: data.redirect_to_agent,
-          }),
-        );
+          }));
+        }
       }
     } catch (error) {
       console.error("Error fetching chat response:", error);
@@ -597,6 +620,13 @@ function ChatArea() {
       setIsLoading(false);
       const clientEnd = performance.now();
       logDuration("Total Client Operation", clientEnd - clientStart);
+    }
+    
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files.length > 0) {
+      setFile(event.target.files[0]);
     }
   };
 
@@ -754,16 +784,17 @@ function ChatArea() {
       rows={1}
     />
     <div className="flex justify-between items-center p-3">
-      {/* Upload Button on the Left Side */}
-      <label htmlFor="file-upload" className="flex items-center cursor-pointer text-muted-foreground hover:text-primary">
-      <Upload className="h-6 w-6" />
-      </label>
-      <input
-        id="file-upload"
-        type="file"
-        accept=".txt,.docx"
-        className="hidden"
-      />
+            <label htmlFor="file-upload" className="flex items-center cursor-pointer text-muted-foreground hover:text-primary">
+              <Upload className="h-6 w-6" />
+              <span>Upload PDF</span>
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept=".pdf"
+              className="hidden"
+              onChange={handleFileChange}
+            />
 
       {/* Send Message Button on the Right Side */}
       <Button

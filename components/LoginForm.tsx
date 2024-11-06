@@ -6,7 +6,7 @@ import { useTheme } from 'next-themes';
 
 interface LoginFormProps {
   onLogin?: (username: string, password: string) => void;
-  onToggle?: () => void;
+  onToggle?: () => void; // Callback for Forgot Password
   error?: string | null;
 }
 
@@ -48,26 +48,18 @@ export default function LoginForm({
                         {error && <div style={styles.error}>{error}</div>}
                         <div style={styles.inputGroup}>
                             <Field id="username" name="username" placeholder="Username" style={styles.input} />
-                       
-                            {/* Wrap ErrorMessage in a div for styling */}
                             <div style={styles.error}>
                                 <ErrorMessage name="username" component="span" />
                             </div>
                         </div>
                         <div style={styles.inputGroup}>
                             <Field type="password" id="password" name="password" placeholder="Password" style={styles.input} />
-                            {/* Wrap ErrorMessage in a div for styling */}
                             <div style={styles.error}>
                                 <ErrorMessage name="password" component="span" />
                             </div>
                         </div>
                         <button type="submit" style={styles.button}>Login</button> 
-                        <div>
-                        <button type="submit" style={styles.button}>Forgot Password?</button> 
-                        </div>
-
-                       
-                    
+                        <button type="button" onClick={onToggle} style={styles.button}>Forgot Password?</button>
                     </Form>
                 )}
             </Formik>
