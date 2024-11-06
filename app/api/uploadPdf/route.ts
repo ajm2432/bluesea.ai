@@ -1,26 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server'; // Import NextRequest and NextResponse
-import fetch from 'node-fetch';
+import { NextRequest, NextResponse } from 'next/server';
 import { Anthropic } from '@anthropic-ai/sdk';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// Handle POST requests
 export async function POST(req: NextRequest) {
-  const { pdfUrl, query } = await req.json(); // Parse JSON body from request
+  const { pdfBase64, query } = await req.json();
 
   try {
-    // Fetch PDF from the URL
-    const pdfResponse = await fetch(pdfUrl);
-    if (!pdfResponse.ok) {
-      throw new Error(`Failed to fetch PDF: ${pdfResponse.statusText}`);
+    // Validate required fields
+    if (!pdfBase64 || !query) {
+      throw new Error('Missing required fields: pdfBase64 or query');
     }
 
-    // Convert PDF to base64
-    const arrayBuffer = await pdfResponse.arrayBuffer();
-    const pdfBase64 = Buffer.from(arrayBuffer).toString('base64');
+    // Check if the base64 string includes the data URL prefix (optional)
+    const base64Data = pdfBase64.startsWith('data:') 
+      ? pdfBase64.split(',')[1] // Remove the data URL prefix if present
+      : pdfBase64;
 
-    // Send the API request to Claude with the PDF in base64 format
-    // @ts-ignore: Ignore TypeScript error related to 'messages' property
+    if (!base64Data) {
+      throw new Error('Invalid base64 data');
+    }
+
+
+    // Send the API request to Claude
     const response = await anthropic.beta.messages.create({
       model: 'claude-3-5-sonnet-20241022',
       betas: ["pdfs-2024-09-25"],
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
               source: {
                 media_type: 'application/pdf',
                 type: 'base64',
-                data: pdfBase64,
+                data: base64Data, // Use cleaned base64 data
               },
             },
             {
@@ -46,23 +48,35 @@ export async function POST(req: NextRequest) {
       ],
     });
 
-    // Return the response from Claude
-    return NextResponse.json({ reply: response }); // Send JSON response
+    // Extract the raw text response
+    const textContent = response.content
+      .filter((block): block is Anthropic.TextBlock => block.type === "text")
+      .map((block) => block.text)
+      .join(" ");
+
+    console.log("Raw Response: ", textContent);
+
+    // Construct a JSON object with the text content and other relevant fields
+    const jsonResponse = {
+      reply: textContent,    // The raw text content
+      status: "success",     // Include status
+      timestamp: new Date().toISOString(),  // Timestamp of the response
+    };
+
+    // Return the response in JSON format
+    return NextResponse.json(jsonResponse);
 
   } catch (error: unknown) {
-    // Assert error as an instance of Error to access message
     if (error instanceof Error) {
       console.error("Error in Claude API request:", error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 }); // Handle errors and return status
+      return NextResponse.json({ error: error.message, status: "error" }, { status: 500 });
     } else {
-      // If error is not an instance of Error, handle the unexpected error
       console.error("Unexpected error:", error);
-      return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
+      return NextResponse.json({ error: 'An unexpected error occurred.', status: "error" }, { status: 500 });
     }
   }
 }
 
-// Handle other HTTP methods (e.g., GET, DELETE, etc.)
 export function GET() {
-  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 }); // Method Not Allowed
+  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
 }

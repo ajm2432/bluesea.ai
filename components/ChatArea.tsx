@@ -40,7 +40,9 @@ const TypedText = ({ text = "", delay = 5 }) => {
 
   return <>{displayedText}</>;
 };
-
+type ExtendedMessage = Message & {
+  isFileUpload?: boolean;  // Optional flag indicating whether the message is related to a file upload
+};
 type ThinkingContent = {
   id: string;
   content: string;
@@ -148,16 +150,24 @@ const MessageContent = ({
       setThinking(false);
     }, 30000);
 
+    // Check if the content looks like a JSON string
     try {
-      const result = JSON.parse(content);
-      console.log(" Parsed Result:", result);
+      // Attempt to parse JSON only if content is a valid JSON string
+      if (content.startsWith("{") || content.startsWith("[")) {
+        const result = JSON.parse(content);
+        console.log("Parsed Result:", result);
 
-      if (
-        result.response &&
-        result.response.length > 0 &&
-        result.response !== "..."
-      ) {
-        setParsed(result);
+        if (
+          result.response &&
+          result.response.length > 0 &&
+          result.response !== "..."
+        ) {
+          setParsed(result);
+          setThinking(false);
+          clearTimeout(timer);
+        }
+      } else {
+        // If it's not JSON, it's plain text, so just display it
         setThinking(false);
         clearTimeout(timer);
       }
@@ -182,7 +192,7 @@ const MessageContent = ({
   if (error && !parsed.response) {
     return <div>Something went wrong. Please try again.</div>;
   }
-
+  
   return (
     <>
       <ReactMarkdown rehypePlugins={[rehypeRaw, rehypeHighlight]}>
@@ -361,7 +371,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 };
 
 function ChatArea() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ExtendedMessage[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -503,51 +513,73 @@ function ChatArea() {
 
     const placeholderDisplayed = performance.now();
     logDuration("Perceived Latency", placeholderDisplayed - clientStart);
+
+    // Helper function to convert Blob to Base64
+async function convertBlobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      resolve(reader.result as string); // This will be a Base64 string
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob); // Convert Blob to Base64
+  });
+}
+// Function to convert file to base64 using FileReader
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onloadend = () => {
+      resolve(reader.result as string); // Base64 string is available here
+    };
+
+    reader.onerror = (error) => {
+      reject('Error reading file: ' + error);
+    };
+
+    // Read the file as a data URL (base64)
+    reader.readAsDataURL(file);
+  });
+}    
+try {
+  if (file && file.type === 'application/pdf') {
+    console.log("PDF file detected. Processing file...");
+  
+    const base64String = await fileToBase64(file);
+    console.log("Base64 string created:", base64String);
+  
+    // Send the file base64 and query to uploadPdf API
+    const response = await fetch('/api/uploadPdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pdfBase64: base64String, query: input }), // Use base64 instead of file URL
+    });
+  
+    if (!response.ok) {
+      console.error(`API request failed with status ${response.status}`);
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+    console.log("API request successful. Processing response...");
+  
+    const data = await response.json();
+    console.log("Response from uploadPdf API:", data);
     
-    try {
-      // Check if a PDF file is uploaded
-      if (file && file.type === 'application/pdf') {
-        console.log("PDF file detected. Processing file...");
+    // Update messages with API response
+    setMessages((prevMessages) => {
+      const newMessages: ExtendedMessage[] = [...prevMessages];
+      const lastIndex = newMessages.length - 1;
+      console.log("Updated messages:", newMessages);  // Check updated state here
+      newMessages[lastIndex] = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: data.reply,
+        isFileUpload: true,
+      };
+      return newMessages;
+    });
     
-        // Create a URL for the file (using URL.createObjectURL)
-        const fileUrl = URL.createObjectURL(file);
-        console.log("File URL created:", fileUrl);
-    
-        // Optionally: Save the file URL to local storage or session storage
-        // You could also save the file directly to IndexedDB or some local database
-        localStorage.setItem('uploadedPdfUrl', fileUrl); // Save URL in local storage
-        console.log("File URL saved to localStorage.");
-    
-        // Send the file URL and query to uploadPdf API
-        console.log("Sending request to uploadPdf API...");
-        const response = await fetch('/api/uploadPdf', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ pdfUrl: fileUrl, query: input }),
-        });
-    
-        if (!response.ok) {
-          console.error(`API request failed with status ${response.status}`);
-          throw new Error(`API request failed with status ${response.status}`);
-        }
-        console.log("API request successful. Processing response...");
-    
-        const data = await response.json();
-        console.log("Response from uploadPdf API:", data);
-    
-        // Update messages with API response
-        console.log("Updating messages with API response...");
-        setMessages((prevMessages) => {
-          const newMessages = [...prevMessages];
-          newMessages[newMessages.length - 1] = {
-            id: crypto.randomUUID(),
-            role: "assistant",
-            content: JSON.stringify(data),
-          };
-          console.log("Messages updated successfully.");
-          return newMessages;
-        });
-      } else { 
+  } else { 
         console.log("Sending message to API:", userMessage.content);
         const startTime = performance.now();
     
@@ -730,53 +762,50 @@ function ChatArea() {
             </div>
           ) : (
             <div className="space-y-4">
-              {messages.map((message, index) => (
-                <div key={message.id}>
-                  <div
-                    className={`flex items-start ${
-                      message.role === "user" ? "justify-end" : ""
-                    } ${
-                      index === messages.length - 1 ? "animate-fade-in-up" : ""
-                    }`}
-                    style={{
-                      animationDuration: "300ms",
-                      animationFillMode: "backwards",
-                    }}
-                  >
-                    {message.role === "assistant" && (
-                      <Avatar className="w-8 h-8 mr-2 border">
-                        <AvatarImage
-                          src="/wave.png"
-                          alt="AI Assistant Avatar"
-                          className="avatar-image"
-                        />
-                        <AvatarFallback>AI</AvatarFallback>
-                      </Avatar>
-                    )}
-                    <div
-                      className={`p-3 rounded-md text-sm max-w-[65%] ${
-                        message.role === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted border"
-                      }`}
-                    >
-                      <MessageContent
-                        content={message.content}
-                        role={message.role}
-                      />
-                    </div>
-                  </div>
+              {messages.map((message: ExtendedMessage, index) => (
+              <div key={message.id}>
+                <div
+                  className={`flex items-start ${message.role === "user" ? "justify-end" : ""} ${
+                    index === messages.length - 1 ? "animate-fade-in-up" : ""
+                  }`}
+                  style={{
+                    animationDuration: "300ms",
+                    animationFillMode: "backwards",
+                  }}
+                >
                   {message.role === "assistant" && (
-                    <SuggestedQuestions
-                      questions={
-                        JSON.parse(message.content).suggested_questions || []
-                      }
-                      onQuestionClick={handleSuggestedQuestionClick}
-                      isLoading={isLoading}
-                    />
+                    <Avatar className="w-8 h-8 mr-2 border">
+                      <AvatarImage
+                        src="/wave.png"
+                        alt="AI Assistant Avatar"
+                        className="avatar-image"
+                      />
+                      <AvatarFallback>AI</AvatarFallback>
+                    </Avatar>
                   )}
+                  <div
+                    className={`p-3 rounded-md text-sm max-w-[65%] ${
+                      message.role === "user"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted border"
+                    }`}
+                  >
+                    <MessageContent content={message.content} role={message.role} />
+                  </div>
                 </div>
-              ))}
+
+                {/* Conditionally render SuggestedQuestions only if the message is not related to a file upload */}
+                {message.role === "assistant" && !message.isFileUpload && (
+                  <SuggestedQuestions
+                    questions={JSON.parse(message.content).suggested_questions || []}
+                    onQuestionClick={handleSuggestedQuestionClick}
+                    isLoading={isLoading}
+                  />
+                )}
+              </div>
+            ))}
+
+
               <div ref={messagesEndRef} style={{ height: "1px" }} />
             </div>
           )}
