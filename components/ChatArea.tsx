@@ -507,24 +507,36 @@ function ChatArea() {
     try {
       // Check if a PDF file is uploaded
       if (file && file.type === 'application/pdf') {
+        console.log("PDF file detected. Processing file...");
+    
         // Create a URL for the file (using URL.createObjectURL)
         const fileUrl = URL.createObjectURL(file);
-        
+        console.log("File URL created:", fileUrl);
+    
         // Optionally: Save the file URL to local storage or session storage
         // You could also save the file directly to IndexedDB or some local database
         localStorage.setItem('uploadedPdfUrl', fileUrl); // Save URL in local storage
-        
+        console.log("File URL saved to localStorage.");
+    
         // Send the file URL and query to uploadPdf API
+        console.log("Sending request to uploadPdf API...");
         const response = await fetch('/api/uploadPdf', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ pdfUrl: fileUrl, query: input }),
         });
-        
-        if (!response.ok) throw new Error(`API request failed with status ${response.status}`);
+    
+        if (!response.ok) {
+          console.error(`API request failed with status ${response.status}`);
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+        console.log("API request successful. Processing response...");
+    
         const data = await response.json();
-        
+        console.log("Response from uploadPdf API:", data);
+    
         // Update messages with API response
+        console.log("Updating messages with API response...");
         setMessages((prevMessages) => {
           const newMessages = [...prevMessages];
           newMessages[newMessages.length - 1] = {
@@ -532,9 +544,10 @@ function ChatArea() {
             role: "assistant",
             content: JSON.stringify(data),
           };
+          console.log("Messages updated successfully.");
           return newMessages;
         });
-      } else {
+      } else { 
         console.log("Sending message to API:", userMessage.content);
         const startTime = performance.now();
     

@@ -20,6 +20,7 @@ export async function POST(req: NextRequest) {
     const pdfBase64 = Buffer.from(arrayBuffer).toString('base64');
 
     // Send the API request to Claude with the PDF in base64 format
+    // @ts-ignore: Ignore TypeScript error related to 'messages' property
     const response = await anthropic.beta.messages.create({
       model: 'claude-3-5-sonnet-20241022',
       betas: ["pdfs-2024-09-25"],
