@@ -203,6 +203,7 @@ export default function Home() {
 
     try {
       const data = await cognitoidentityserviceprovider.forgotPassword(params).promise();
+      
   } catch (err) {
       if (err instanceof Error) { // Type guard to ensure err is of type Error
           console.error("Error resetting password:", err);
@@ -215,7 +216,35 @@ export default function Home() {
     
 };
   
-const handleForgotPassword = async () =>  {
+const handleForgotPassword = async (newPassword: string, username: string, code: string) =>  {
+
+  const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+    if (!clientId) {
+        setError("Client ID is not defined");
+        return;
+    }
+
+    const resetparams = { // ForgotPasswordRequest
+        ClientId: clientId, /* required */
+        ConfirmationCode: code, /* required */
+        Password: newPassword, /* required */
+        Username: username, /* required */
+    };
+
+    try {
+      const data = await cognitoidentityserviceprovider.confirmForgotPassword(resetparams).promise();
+      if (data) {
+        setIsAuthenticated(true);  // Update the authentication state to true
+    }
+  } catch (err) {
+      if (err instanceof Error) { // Type guard to ensure err is of type Error
+          console.error("Error resetting password:", err);
+          setError(err.message || "An error occurred while resetting the password.");
+      } else {
+          console.error("Unexpected error resetting password:", err);
+          setError("An unexpected error occurred while resetting the password.");
+      }
+  }
   
 };
   

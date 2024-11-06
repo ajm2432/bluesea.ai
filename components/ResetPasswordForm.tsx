@@ -6,7 +6,7 @@ import { useTheme } from 'next-themes';
 
 // Define the type for the props
 interface ResetPasswordFormProps {
-    onSubmit: (newPassword: string, username: string, code: string) => void; // Specify the type for the onSubmit function
+    onSubmit: (username: string, newPassword: string, code: string) => void; // Specify the type for the onSubmit function
 }
 
 export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) {
@@ -37,8 +37,8 @@ export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) 
                     return errors;
                 }}
                 onSubmit={(values) => {
-                    // Pass only the new password to onSubmit
-                    onSubmit(values.newPassword, values.code, values.username);
+                    // Pass the values correctly as separate arguments to the parent onSubmit function
+                    onSubmit(values.newPassword, values.username, values.code  );
                 }}
             >
                 {() => (
@@ -55,7 +55,7 @@ export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) 
                             </h2>
                         </div>
                         <div>
-                        <h2
+                            <h2
                                 style={{
                                     ...styles.title,
                                     color: isDarkMode ? '#000' : '#333',
@@ -69,13 +69,26 @@ export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) 
                         <div style={styles.inputGroup}>
                             <Field
                                 type="text"
+                                id="username"
+                                name="username"
+                                placeholder="Username"
+                                style={styles.input}
+                            />
+                            <div style={styles.error}>
+                            <ErrorMessage name="username" component="div"/>
+                            </div>
+                            
+                        </div>
+                        <div style={styles.inputGroup}>
+                            <Field
+                                type="text"
                                 id="code"
                                 name="code"
                                 placeholder="Verification Code"
                                 style={styles.input}
                             />
                             <div style={styles.error}>
-                            <ErrorMessage name="newPassword" component="div"/>
+                            <ErrorMessage name="code" component="div"/>
                             </div>
                             
                         </div>
