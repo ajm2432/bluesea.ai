@@ -1,32 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Anthropic } from '@anthropic-ai/sdk';
+import { z } from 'zod';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-export async function POST(req: NextRequest) {
-  const { pdfBase64, query } = await req.json();
+// Define schema for the response
+const responseSchema = z.object({
+  response: z.string(),
+  thinking: z.string(),
+  user_mood: z.enum([
+    "positive",
+    "neutral",
+    "negative",
+    "curious",
+    "frustrated",
+    "confused",
+  ]),
+  suggested_questions: z.array(z.string()),
+  debug: z.object({
+    context_used: z.boolean(),
+  }),
+  status: z.string(),
+  timestamp: z.string(),
+});
+
+function sanitizeAndParseJSON(jsonString: string) {
+  const sanitized = jsonString.replace(/(?<=:\s*")(.|\n)*?(?=")/g, (match) =>
+    match.replace(/\n/g, "\\n")
+  );
 
   try {
-    // Validate required fields
+    return JSON.parse(sanitized);
+  } catch (parseError) {
+    console.error("Error parsing JSON response:", parseError);
+    throw new Error("Invalid JSON response from AI");
+  }
+}
+
+export async function POST(req: NextRequest) {
+  const startTime = Date.now();
+
+  try {
+    const { pdfBase64, query } = await req.json();
+
     if (!pdfBase64 || !query) {
-      throw new Error('Missing required fields: pdfBase64 or query');
+      throw new Error("Missing required fields: pdfBase64 or query");
     }
 
-    // Check if the base64 string includes the data URL prefix (optional)
-    const base64Data = pdfBase64.startsWith('data:') 
-      ? pdfBase64.split(',')[1] // Remove the data URL prefix if present
+    const base64Data = pdfBase64.startsWith('data:')
+      ? pdfBase64.split(',')[1]
       : pdfBase64;
 
-    if (!base64Data) {
-      throw new Error('Invalid base64 data');
-    }
-
-
-    // Send the API request to Claude
     const response = await anthropic.beta.messages.create({
       model: 'claude-3-5-sonnet-20241022',
       betas: ["pdfs-2024-09-25"],
       max_tokens: 1024,
+      system: 'System prompt with guidance here',
       messages: [
         {
           content: [
@@ -35,7 +64,7 @@ export async function POST(req: NextRequest) {
               source: {
                 media_type: 'application/pdf',
                 type: 'base64',
-                data: base64Data, // Use cleaned base64 data
+                data: base64Data,
               },
             },
             {
@@ -48,35 +77,44 @@ export async function POST(req: NextRequest) {
       ],
     });
 
-    // Extract the raw text response
     const textContent = response.content
       .filter((block): block is Anthropic.TextBlock => block.type === "text")
       .map((block) => block.text)
       .join(" ");
 
-    console.log("Raw Response: ", textContent);
-
-    // Construct a JSON object with the text content and other relevant fields
-    const jsonResponse = {
-      reply: textContent,    // The raw text content
-      status: "success",     // Include status
-      timestamp: new Date().toISOString(),  // Timestamp of the response
+    const structuredResponse = {
+      thinking: "Providing insights based on PDF content.",
+      response: textContent,
+      user_mood: "curious",
+      suggested_questions: ["What are the document's key points?", "Can you summarize more details?"],
+      debug: {
+        context_used: !!response.content.length,
+      },
+      status: "success",
+      timestamp: new Date().toISOString(),
     };
 
-    // Return the response in JSON format
-    return NextResponse.json(jsonResponse);
+    const validatedResponse = responseSchema.parse(structuredResponse);
 
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("Error in Claude API request:", error.message);
-      return NextResponse.json({ error: error.message, status: "error" }, { status: 500 });
-    } else {
-      console.error("Unexpected error:", error);
-      return NextResponse.json({ error: 'An unexpected error occurred.', status: "error" }, { status: 500 });
-    }
+    return NextResponse.json(validatedResponse);
+
+  } catch (error) {
+    console.error("Error processing request:", error);
+    return NextResponse.json(
+      {
+        response: "An error occurred while processing your request.",
+        thinking: "Error occurred in response generation.",
+        user_mood: "neutral",
+        suggested_questions: [],
+        debug: { context_used: false },
+        status: "error",
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 }
+    );
   }
 }
 
 export function GET() {
-  return NextResponse.json({ error: 'Method Not Allowed' }, { status: 405 });
+  return NextResponse.json({ error: "Method Not Allowed" }, { status: 405 });
 }

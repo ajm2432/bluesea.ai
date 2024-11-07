@@ -192,7 +192,7 @@ const MessageContent = ({
   if (error && !parsed.response) {
     return <div>Something went wrong. Please try again.</div>;
   }
-  
+
   return (
     <>
       <ReactMarkdown rehypePlugins={[rehypeRaw, rehypeHighlight]}>
@@ -514,17 +514,6 @@ function ChatArea() {
     const placeholderDisplayed = performance.now();
     logDuration("Perceived Latency", placeholderDisplayed - clientStart);
 
-    // Helper function to convert Blob to Base64
-async function convertBlobToBase64(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      resolve(reader.result as string); // This will be a Base64 string
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob); // Convert Blob to Base64
-  });
-}
 // Function to convert file to base64 using FileReader
 function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -573,11 +562,21 @@ try {
       newMessages[lastIndex] = {
         id: crypto.randomUUID(),
         role: "assistant",
-        content: data.reply,
+        content: JSON.stringify(data),
         isFileUpload: true,
       };
       return newMessages;
     });
+
+    const sidebarEvent = new CustomEvent("updateSidebar", {
+      detail: {
+        id: crypto.randomUUID(),
+        content: data.thinking?.trim(),
+        user_mood: data.user_mood,
+        debug: data.debug,
+      },
+    });
+    window.dispatchEvent(sidebarEvent);
     
   } else { 
         console.log("Sending message to API:", userMessage.content);
