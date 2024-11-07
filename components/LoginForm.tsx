@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import { useTheme } from 'next-themes';
-import { title } from 'process';
 
 interface LoginFormProps {
   onLogin?: (username: string, password: string) => void;
@@ -70,7 +69,7 @@ export default function LoginForm({
                                     setForgotPasswordError(null);
                                     onToggle(values.username);
                                 } else {
-                                    setForgotPasswordError("Please enter your username to reset your password.");
+                                    setForgotPasswordError("Error: Please enter your username to reset your password.");
                                 }
                             }}
                             style={styles.button}

@@ -61,7 +61,7 @@ export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) 
                                     paddingBottom:'16px'
                                 }}
                             >
-                                Please set a new password
+                                Please set a new password that is atleast 8 characters
                             </h2>
                         </div>
                         <div style={styles.inputGroup}>
