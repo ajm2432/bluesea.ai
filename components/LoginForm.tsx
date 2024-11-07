@@ -47,14 +47,16 @@ export default function LoginForm({
                             </h2>
                         </div>
                         {error && <div style={styles.error}>{error}</div>}
-                        <div style={styles.inputGroup}>
-                            <Field id="username" name="username" placeholder="Username" style={styles.input} />
+                        <div style={styles.inputGroup}> 
+                       Username:
+                            <Field id="username" name="username" placeholder="Enter your Username" style={styles.input} />
                             <div style={styles.error}>
                                 <ErrorMessage name="username" component="span" />
                             </div>
                         </div>
                         <div style={styles.inputGroup}>
-                            <Field type="password" id="password" name="password" placeholder="Password" style={styles.input} />
+                        Password:
+                            <Field type="password" id="password" name="password" placeholder="Enter your Password" style={styles.input} />
                             <div style={styles.error}>
                                 <ErrorMessage name="password" component="span" />
                             </div>
@@ -67,7 +69,7 @@ export default function LoginForm({
                                     setForgotPasswordError(null);
                                     onToggle(values.username);
                                 } else {
-                                    setForgotPasswordError("Please enter your username to reset your password.");
+                                    setForgotPasswordError("Error: Please enter your username to reset your password.");
                                 }
                             }}
                             style={styles.button}
