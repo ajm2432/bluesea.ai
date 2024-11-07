@@ -567,7 +567,10 @@ try {
       };
       return newMessages;
     });
-
+    
+        // Clear the file after successful API response
+        setFile(null);
+        
     const sidebarEvent = new CustomEvent("updateSidebar", {
       detail: {
         id: crypto.randomUUID(),
