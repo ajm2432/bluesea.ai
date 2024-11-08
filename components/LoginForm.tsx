@@ -18,7 +18,7 @@ export default function LoginForm({
     const { theme } = useTheme();
     const isDarkMode = theme === 'dark';
     const [forgotPasswordError, setForgotPasswordError] = useState<string | null>(null);
-
+    const [noEmailError, setNoEmailError] = useState<string | null>(null);
     return (
         <div style={styles.container}>
             <Formik
@@ -26,10 +26,24 @@ export default function LoginForm({
                     username: '',
                     password: '',
                 }}
+                validate={(values) => {
+                    const errors: { username?: string; password?: string } = {};
+                    if (!values.username) {
+                        errors.username = 'Username is required';
+                    }
+                    if (!values.password) {
+                        errors.password = 'Password is required';
+                    }
+                    return errors;
+                }}
                 onSubmit={(values) => {
                     // Pass username and password to onLogin
                     if (values.username && values.password) {
                         onLogin(values.username, values.password);
+                    
+                    }
+                    else {
+                        setNoEmailError("Error: Please enter your username to login.");
                     }
                 }}
             >
@@ -61,14 +75,21 @@ export default function LoginForm({
                                 <ErrorMessage name="password" component="span" />
                             </div>
                         </div>
-                        <button type="submit" style={styles.button}>Login</button> 
+                        
+                        <button type="submit" style={styles.button}
+            
+                        >Login
+                
+                            </button> 
+                        
                         <button
                             type="button"
                             onClick={() => {
                                 if (values.username) {
                                     setForgotPasswordError(null);
                                     onToggle(values.username);
-                                } else {
+                                }
+                                 else {
                                     setForgotPasswordError("Error: Please enter your username to reset your password.");
                                 }
                             }}

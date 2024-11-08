@@ -212,8 +212,13 @@ export default function Home() {
             ClientId: clientId,
             Username: username
         };
-
+    const userparams = { // check username
+        UserPoolId: "us-east-1_z2qYAUmNM",
+        Username: username, /* required */
+    };
         try {
+        const userdata = await cognitoidentityserviceprovider.adminGetUser(userparams).promise();
+        console.log(userdata)
             const data = await cognitoidentityserviceprovider.forgotPassword(params).promise();
             setSuccessMessage("Please check your email for a verification code");
             setShowSuccessModal(true);
@@ -241,8 +246,9 @@ export default function Home() {
             Password: newPassword,
             Username: username,
         };
-
+ 
         try {
+        
             const data = await cognitoidentityserviceprovider.confirmForgotPassword(resetparams).promise();
             if (data) {
                 setIsAuthenticated(true);
