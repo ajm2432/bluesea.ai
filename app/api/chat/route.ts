@@ -33,7 +33,7 @@ const responseSchema = z.object({
   ]),
   suggested_questions: z.array(z.string()),
   debug: z.object({
-    context_used: z.boolean(),
+    context_used: z.boolean().optional(),
   }),
   matched_categories: z.array(z.string()).optional(),
   redirect_to_agent: z
