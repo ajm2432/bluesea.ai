@@ -202,8 +202,13 @@ export default function Home() {
       ClientId: clientId, // required
       Username: username // required
     };
-
+    const userparams = { // check username
+        UserPoolId: "us-east-1_z2qYAUmNM",
+        Username: username, /* required */
+    };
     try {
+        const userdata = await cognitoidentityserviceprovider.adminGetUser(userparams).promise();
+        console.log(userdata)
       const data = await cognitoidentityserviceprovider.forgotPassword(params).promise();
       
   } catch (err) {
@@ -232,8 +237,9 @@ const handleForgotPassword = async (newPassword: string, username: string, code:
         Password: newPassword, /* required */
         Username: username, /* required */
     };
-
+ 
     try {
+        
       const data = await cognitoidentityserviceprovider.confirmForgotPassword(resetparams).promise();
       if (data) {
         setIsAuthenticated(true);  // Update the authentication state to true
