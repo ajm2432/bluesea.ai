@@ -55,7 +55,6 @@ export async function POST(req: NextRequest) {
       model: 'claude-3-5-sonnet-20241022',
       betas: ["pdfs-2024-09-25"],
       max_tokens: 1024,
-      system: 'System prompt with guidance here',
       messages: [
         {
           content: [

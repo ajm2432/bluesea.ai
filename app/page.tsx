@@ -9,7 +9,10 @@ import ResetPasswordForm from '../components/ResetPasswordForm';
 import AWS, { CognitoIdentityServiceProvider, AWSError } from 'aws-sdk';
 import { UNSTABLE_REVALIDATE_RENAME_ERROR } from 'next/dist/lib/constants';
 
+
 export default function Home() {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [challengeSession, setChallengeSession] = useState<string | null>(null);
     const [challengeParameters, setChallengeParameters] = useState<any>(null);
     const [showNewPassword, setShowNewPassword] = useState(false);
@@ -239,14 +242,14 @@ const handleForgotPassword = async (newPassword: string, username: string, code:
         setIsAuthenticated(true);  // Update the authentication state to true
     }
   } catch (err) {
-      if (err instanceof Error) { // Type guard to ensure err is of type Error
-          console.error("Error resetting password:", err);
-          setError(err.message || "An error occurred while resetting the password.");
-      } else {
-          console.error("Unexpected error resetting password:", err);
-          setError("An unexpected error occurred while resetting the password.");
-      }
-  }
+    let errorMessage = "An unexpected error occurred while resetting the password.";
+    if (err instanceof Error) {
+        errorMessage = err.message || "An error occurred while resetting the password.";
+    }
+    console.error("Error resetting password:", err);
+    setError(errorMessage);
+    window.alert(errorMessage); // Display alert dialog on error
+}
   
 };
   
