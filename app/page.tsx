@@ -6,16 +6,26 @@ import MainContent from '../components/app';
 import LoginForm from '../components/LoginForm';
 import NewPasswordForm from '../components/NewPasswordForm';
 import ResetPasswordForm from '../components/ResetPasswordForm';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import AWS, { CognitoIdentityServiceProvider, AWSError } from 'aws-sdk';
-import { UNSTABLE_REVALIDATE_RENAME_ERROR } from 'next/dist/lib/constants';
 
 export default function Home() {
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>("");
+    const [successMessage, setSuccessMessage] = useState<string>("");
     const [challengeSession, setChallengeSession] = useState<string | null>(null);
     const [challengeParameters, setChallengeParameters] = useState<any>(null);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showResetPassword, setShowResetPassword] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     
     const cognitoidentityserviceprovider = new AWS.CognitoIdentityServiceProvider({ region: 'us-east-1' });
@@ -34,99 +44,99 @@ export default function Home() {
     const isTokenExpired = (token: string): boolean => {
         if (!token) return true;
         const decoded = JSON.parse(atob(token.split('.')[1]));
-        const expirationTime = decoded.exp * 1000; // convert to milliseconds
+        const expirationTime = decoded.exp * 1000;
         return Date.now() > expirationTime;
     };
 
     const refreshAccessToken = async (refreshToken: string) => {
-      const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-      
-      if (!clientId) {
-          throw new Error("Client ID is not defined");
-      }
-  
-      const params = {
-          AuthFlow: 'REFRESH_TOKEN_AUTH',
-          ClientId: clientId,
-          AuthParameters: {
-              REFRESH_TOKEN: refreshToken,
-          },
-      };
-  
-      try {
-          const data = await cognitoidentityserviceprovider.initiateAuth(params).promise();
-          if (data.AuthenticationResult) {
-              const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
-  
-              // Check if the tokens are defined before storing them
-              if (AccessToken && IdToken && RefreshToken) {
-                  localStorage.setItem('accessToken', AccessToken);
-                  localStorage.setItem('idToken', IdToken);
-                  localStorage.setItem('refreshToken', RefreshToken);
-                  setIsAuthenticated(true);
-              } else {
-                  console.error('One or more tokens are missing:', { AccessToken, IdToken, RefreshToken });
-              }
-          } else {
-              console.error('No authentication result returned during token refresh');
-          }
-      } catch (error) {
-          console.error('Error refreshing access token', error);
-      }
-  };
-  //Copy newpasswordform.tsx in componets, copy and rename to resetpasswordform.tsx edit resetpasswordform to have another value to have a confirmation code
-  ///starting point for the UI
-
-  const handleLogin = async (username: string, password: string) => {
-    console.log('Attempting login with', { username });
-
-    const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-    if (!clientId) {
-        setError("Client ID is not defined");
-        return;
-    }
-
-    const params = {
-        AuthFlow: "USER_PASSWORD_AUTH",
-        AuthParameters: {
-            "PASSWORD": password,
-            "USERNAME": username
-        },
-        ClientId: clientId
+        const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+        
+        if (!clientId) {
+            setErrorMessage("Client ID is not defined");
+            setShowErrorModal(true);
+            return;
+        }
+    
+        const params = {
+            AuthFlow: 'REFRESH_TOKEN_AUTH',
+            ClientId: clientId,
+            AuthParameters: {
+                REFRESH_TOKEN: refreshToken,
+            },
+        };
+    
+        try {
+            const data = await cognitoidentityserviceprovider.initiateAuth(params).promise();
+            if (data.AuthenticationResult) {
+                const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
+    
+                if (AccessToken && IdToken && RefreshToken) {
+                    localStorage.setItem('accessToken', AccessToken);
+                    localStorage.setItem('idToken', IdToken);
+                    localStorage.setItem('refreshToken', RefreshToken);
+                    setIsAuthenticated(true);
+                } else {
+                    setErrorMessage('One or more tokens are missing from the authentication result');
+                    setShowErrorModal(true);
+                }
+            } else {
+                setErrorMessage('No authentication result returned during token refresh');
+                setShowErrorModal(true);
+            }
+        } catch (error) {
+            setErrorMessage('Error refreshing access token');
+            setShowErrorModal(true);
+        }
     };
 
-    try {
-        const data = await cognitoidentityserviceprovider.initiateAuth(params).promise();
-        if (data.ChallengeName === "NEW_PASSWORD_REQUIRED") {
-            console.log("New password required.");
-            setChallengeSession(data.Session || null);
-            setChallengeParameters(data.ChallengeParameters);
-            setShowNewPassword(true);
-        } else if (data.AuthenticationResult) {
-            console.log(data);
-            const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
+    const handleLogin = async (username: string, password: string) => {
+        console.log('Attempting login with', { username });
 
-            // Check if the tokens are defined before storing them
-            if (AccessToken && IdToken && RefreshToken) {
-                localStorage.setItem('accessToken', AccessToken);
-                localStorage.setItem('idToken', IdToken);
-                localStorage.setItem('refreshToken', RefreshToken);
-                setIsAuthenticated(true);
-            } else {
-                setError("Login failed: one or more tokens are missing.");
-                console.error('One or more tokens are missing:', { AccessToken, IdToken, RefreshToken });
-            }
-        } else {
-            setError("Login failed: no authentication result returned.");
+        const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+        if (!clientId) {
+            setErrorMessage("Client ID is not defined");
+            setShowErrorModal(true);
+            return;
         }
-    } catch (err) {
-        const error = err as AWSError;
-        const errorMessage = error.message || "An unknown error occurred";
-        setError(errorMessage);
-        console.log(error, error.stack);
-    }
-};
 
+        const params = {
+            AuthFlow: "USER_PASSWORD_AUTH",
+            AuthParameters: {
+                "PASSWORD": password,
+                "USERNAME": username
+            },
+            ClientId: clientId
+        };
+
+        try {
+            const data = await cognitoidentityserviceprovider.initiateAuth(params).promise();
+            if (data.ChallengeName === "NEW_PASSWORD_REQUIRED") {
+                console.log("New password required.");
+                setChallengeSession(data.Session || null);
+                setChallengeParameters(data.ChallengeParameters);
+                setShowNewPassword(true);
+            } else if (data.AuthenticationResult) {
+                const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
+
+                if (AccessToken && IdToken && RefreshToken) {
+                    localStorage.setItem('accessToken', AccessToken);
+                    localStorage.setItem('idToken', IdToken);
+                    localStorage.setItem('refreshToken', RefreshToken);
+                    setIsAuthenticated(true);
+                } else {
+                    setErrorMessage("Login failed: one or more tokens are missing.");
+                    setShowErrorModal(true);
+                }
+            } else {
+                setErrorMessage("Login failed: no authentication result returned.");
+                setShowErrorModal(true);
+            }
+        } catch (err) {
+            const error = err as AWSError;
+            setErrorMessage(error.message || "An unknown error occurred");
+            setShowErrorModal(true);
+        }
+    };
 
     const handleLogout = () => {
         setIsAuthenticated(false);
@@ -135,135 +145,131 @@ export default function Home() {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('idToken');
         localStorage.removeItem('refreshToken');
-        setError(null); // Clear any errors on logout
     };
 
     const handleNewPassword = async (newPassword: string) => {
-      if (!challengeSession) {
-          console.error("No challenge session available.");
-          return;
-      }
-  
-      const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-      if (!clientId) {
-          setError("Client ID is not defined");
-          return;
-      }
-  
-      const params = {
-          ChallengeName: 'NEW_PASSWORD_REQUIRED',
-          ClientId: clientId,
-          Session: challengeSession,
-          ChallengeResponses: {
-              USERNAME: challengeParameters?.USER_ID_FOR_SRP || '',
-              NEW_PASSWORD: newPassword,
-          },
-      };
-  
-      try {
-          const data = await cognitoidentityserviceprovider.respondToAuthChallenge(params).promise();
-          if (data.AuthenticationResult) {
-              console.log("Password reset successful", data);
-              const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
-  
-              if (AccessToken && IdToken && RefreshToken) {
-                  localStorage.setItem('accessToken', AccessToken);
-                  localStorage.setItem('idToken', IdToken);
-                  localStorage.setItem('refreshToken', RefreshToken);
-                  setIsAuthenticated(true);
-              } else {
-                  setError("Login failed: one or more tokens are missing.");
-                  console.error('One or more tokens are missing:', { AccessToken, IdToken, RefreshToken });
-              }
-          } else {
-              console.error("Password reset successful but no authentication result returned.");
-              setError("Password reset successful but no authentication result returned.");
-          }
-      } catch (err) {
-          if (err instanceof Error) { // Type guard to ensure err is of type Error
-              console.error("Error resetting password:", err);
-              setError(err.message || "An error occurred while resetting the password.");
-          } else {
-              console.error("Unexpected error resetting password:", err);
-              setError("An unexpected error occurred while resetting the password.");
-          }
-      }
-  };
-
-  const switchForgotPassword = async (username: string) => {
-    setShowResetPassword(true); // Switch to ResetPasswordForm view
-    const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-    if (!clientId) {
-        setError("Client ID is not defined");
-        return;
-    }
-
-    const params = { // ForgotPasswordRequest
-      ClientId: clientId, // required
-      Username: username // required
+        if (!challengeSession) {
+            setErrorMessage("No challenge session available.");
+            setShowErrorModal(true);
+            return;
+        }
+    
+        const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+        if (!clientId) {
+            setErrorMessage("Client ID is not defined");
+            setShowErrorModal(true);
+            return;
+        }
+    
+        const params = {
+            ChallengeName: 'NEW_PASSWORD_REQUIRED',
+            ClientId: clientId,
+            Session: challengeSession,
+            ChallengeResponses: {
+                USERNAME: challengeParameters?.USER_ID_FOR_SRP || '',
+                NEW_PASSWORD: newPassword,
+            },
+        };
+    
+        try {
+            const data = await cognitoidentityserviceprovider.respondToAuthChallenge(params).promise();
+            if (data.AuthenticationResult) {
+                const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
+    
+                if (AccessToken && IdToken && RefreshToken) {
+                    localStorage.setItem('accessToken', AccessToken);
+                    localStorage.setItem('idToken', IdToken);
+                    localStorage.setItem('refreshToken', RefreshToken);
+                    setIsAuthenticated(true);
+                } else {
+                    setErrorMessage("Login failed: one or more tokens are missing.");
+                    setShowErrorModal(true);
+                }
+            } else {
+                setErrorMessage("Password reset successful but no authentication result returned.");
+                setShowErrorModal(true);
+            }
+        } catch (err) {
+            if (err instanceof Error) {
+                setErrorMessage(err.message || "An error occurred while resetting the password.");
+            } else {
+                setErrorMessage("An unexpected error occurred while resetting the password.");
+            }
+            setShowErrorModal(true);
+        }
     };
+
+    const switchForgotPassword = async (username: string) => {
+        setShowResetPassword(true);
+        const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+        if (!clientId) {
+            setErrorMessage("Client ID is not defined");
+            setShowErrorModal(true);
+            return;
+        }
+
+        const params = {
+            ClientId: clientId,
+            Username: username
+        };
     const userparams = { // check username
         UserPoolId: "us-east-1_z2qYAUmNM",
         Username: username, /* required */
     };
-    try {
+        try {
         const userdata = await cognitoidentityserviceprovider.adminGetUser(userparams).promise();
         console.log(userdata)
-      const data = await cognitoidentityserviceprovider.forgotPassword(params).promise();
-      
-  } catch (err) {
-      if (err instanceof Error) { // Type guard to ensure err is of type Error
-          console.error("Error resetting password:", err);
-          setError(err.message || "An error occurred while resetting the password.");
-      } else {
-          console.error("Unexpected error resetting password:", err);
-          setError("An unexpected error occurred while resetting the password.");
-      }
-  }
-    
-};
-  
-const handleForgotPassword = async (newPassword: string, username: string, code: string) =>  {
-
-  const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-    if (!clientId) {
-        setError("Client ID is not defined");
-        return;
-    }
-
-    const resetparams = { // ForgotPasswordRequest
-        ClientId: clientId, /* required */
-        ConfirmationCode: code, /* required */
-        Password: newPassword, /* required */
-        Username: username, /* required */
+            const data = await cognitoidentityserviceprovider.forgotPassword(params).promise();
+            setSuccessMessage("Please check your email for a verification code");
+            setShowSuccessModal(true);
+        } catch (err) {
+            if (err instanceof Error) {
+                setErrorMessage(err.message || "An error occurred while resetting the password.");
+            } else {
+                setErrorMessage("An unexpected error occurred while resetting the password.");
+            }
+            setShowErrorModal(true);
+        }
     };
- 
-    try {
-        
-      const data = await cognitoidentityserviceprovider.confirmForgotPassword(resetparams).promise();
-      if (data) {
-        setIsAuthenticated(true);  // Update the authentication state to true
-    }
-  } catch (err) {
-      if (err instanceof Error) { // Type guard to ensure err is of type Error
-          console.error("Error resetting password:", err);
-          setError(err.message || "An error occurred while resetting the password.");
-      } else {
-          console.error("Unexpected error resetting password:", err);
-          setError("An unexpected error occurred while resetting the password.");
-      }
-  }
-  
-};
-  
+    
+    const handleForgotPassword = async (newPassword: string, username: string, code: string) => {
+        const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
+        if (!clientId) {
+            setErrorMessage("Client ID is not defined");
+            setShowErrorModal(true);
+            return;
+        }
 
-  if (loading) {
-    return (
-        <div style={styles.loadingContainer}>
-            <img src="/wave.png" alt="Loading logo" style={styles.logo} />
-        </div>
-    );
-}
+        const resetparams = {
+            ClientId: clientId,
+            ConfirmationCode: code,
+            Password: newPassword,
+            Username: username,
+        };
+ 
+        try {
+        
+            const data = await cognitoidentityserviceprovider.confirmForgotPassword(resetparams).promise();
+            if (data) {
+                setIsAuthenticated(true);
+            }
+        } catch (err) {
+            if (err instanceof Error) {
+                setErrorMessage(err.message || "An error occurred while resetting the password.");
+            } else {
+                setErrorMessage("An unexpected error occurred while resetting the password.");
+            }
+            setShowErrorModal(true);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div style={styles.loadingContainer}>
+                <img src="/wave.png" alt="Loading logo" style={styles.logo} />
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -272,15 +278,53 @@ const handleForgotPassword = async (newPassword: string, username: string, code:
                     <TopNavBar onLogout={handleLogout} />
                     <MainContent />
                 </div>
-                ) : showResetPassword ? (
-                  <ResetPasswordForm onSubmit={handleForgotPassword} />
+            ) : showResetPassword ? (
+                <ResetPasswordForm onSubmit={handleForgotPassword} />
             ) : showNewPassword ? (
                 <NewPasswordForm onSubmit={handleNewPassword} />
             ) : (
                 <div>
-                    <LoginForm onLogin={handleLogin} onToggle={switchForgotPassword} error={error} />
+                    <LoginForm onLogin={handleLogin} onToggle={switchForgotPassword} />
                 </div>
             )}
+
+            <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
+                <DialogContent style={styles.modal}>
+                    <DialogHeader>
+                        <DialogTitle style={styles.modalTitle}>Error</DialogTitle>
+                    </DialogHeader>
+                    <div style={styles.modalContent}>
+                        {errorMessage}
+                    </div>
+                    <DialogFooter>
+                        <button 
+                            onClick={() => setShowErrorModal(false)}
+                            style={styles.button}
+                        >
+                            Close
+                        </button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+                <DialogContent style={styles.modal}>
+                    <DialogHeader>
+                        <DialogTitle style={styles.modalTitle}>Check Your Inbox 📧</DialogTitle>
+                    </DialogHeader>
+                    <div style={styles.modalContent}>
+                        {successMessage}
+                    </div>
+                    <DialogFooter>
+                        <button 
+                            onClick={() => setShowSuccessModal(false)}
+                            style={styles.button}
+                        >
+                            Close
+                        </button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
@@ -305,4 +349,38 @@ const styles = {
           transform: 'rotate(360deg)',
       },
   },
+
+  modal: {
+    background: 'white',
+    padding: '2rem',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    width: '300px',
+    border: 'none',
+},
+modalTitle: {
+    margin: 0,
+    fontSize: '1.25rem',
+    fontWeight: 600,
+    color: '#333',
+    textAlign: 'center' as const,
+},
+modalContent: {
+    fontSize: '14px',
+    color: '#666',
+    marginBottom: '1rem',
+    textAlign: 'center' as const,
+    padding: '1rem 0',
+},
+button: {
+    width: '100%',
+    padding: '0.5rem',
+    borderRadius: '4px',
+    border: 'none',
+    backgroundColor: '#007bff',
+    marginBottom: '16px',
+    color: 'white',
+    fontSize: '16px',
+    cursor: 'pointer',
+},
 };

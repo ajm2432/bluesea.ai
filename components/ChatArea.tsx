@@ -20,6 +20,7 @@ import "highlight.js/styles/atom-one-dark.css";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import Image from "next/image";
+import { AiOutlineFilePdf } from 'react-icons/ai';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -372,6 +373,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 
 function ChatArea() {
   const [messages, setMessages] = useState<ExtendedMessage[]>([]);
+  const [pdfFilename, setPdfFilename] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -570,7 +572,7 @@ try {
     
         // Clear the file after successful API response
         setFile(null);
-        
+
     const sidebarEvent = new CustomEvent("updateSidebar", {
       detail: {
         id: crypto.randomUUID(),
@@ -673,7 +675,9 @@ try {
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
-      setFile(event.target.files[0]);
+      const selectedFile = event.target.files[0];
+      setFile(selectedFile);
+      setPdfFilename(selectedFile.name); // Save the PDF file name
     }
   };
 
@@ -796,8 +800,7 @@ try {
                   </div>
                 </div>
 
-                {/* Conditionally render SuggestedQuestions only if the message is not related to a file upload */}
-                {message.role === "assistant" && !message.isFileUpload && (
+                {message.role === "assistant" && (
                   <SuggestedQuestions
                     questions={JSON.parse(message.content).suggested_questions || []}
                     onQuestionClick={handleSuggestedQuestionClick}
@@ -827,20 +830,28 @@ try {
       className="resize-none min-h-[44px] bg-background border-0 p-3 rounded-xl shadow-none focus-visible:ring-0"
       rows={1}
     />
-    <div className="flex justify-between items-center p-3">
-            <label htmlFor="file-upload" className="flex items-center cursor-pointer text-muted-foreground hover:text-primary">
-              <Upload className="h-6 w-6" />
-              <span>Upload PDF</span>
-            </label>
-            <input
-              id="file-upload"
-              type="file"
-              accept=".pdf"
-              className="hidden"
-              onChange={handleFileChange}
-            />
 
-      {/* Send Message Button on the Right Side */}
+    <div className="flex justify-between items-center p-3">
+      <label htmlFor="file-upload" className="flex items-center cursor-pointer text-muted-foreground hover:text-primary">
+        <Upload className="h-6 w-6" />
+        <span>Upload PDF</span>
+      </label>
+      <input
+        id="file-upload"
+        type="file"
+        accept=".pdf"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+
+      {/* PDF Icon and Filename */}
+      {pdfFilename && (
+        <div className="flex items-center text-sm text-muted-foreground ml-2">
+          <AiOutlineFilePdf className="h-5 w-5 mr-1" /> {/* Add an icon for PDF, e.g., `FileIcon` */}
+          <span>{pdfFilename}</span>
+        </div>
+      )}
+
       <Button
         type="submit"
         disabled={isLoading || input.trim() === ""}

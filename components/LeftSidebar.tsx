@@ -133,7 +133,7 @@ const LeftSidebar: React.FC = () => {
                       <span
                         className={`px-2 py-1 rounded-full ${getDebugPillColor(content.debug.context_used)}`}
                       >
-                        Context: {content.debug.context_used ? "" : ""}
+                        Context {content.debug.context_used ? "" : ""}
                       </span>
                     </div>
                   )}
