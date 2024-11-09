@@ -18,14 +18,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} flex flex-col h-full`}>
+      <body className={`${inter.className} flex flex-col h-full bg-gray-100`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <div className="container mx-auto p-4 sm:p-6 lg:p-8 small-screen">
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>
