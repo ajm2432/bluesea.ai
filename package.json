@@ -34,6 +34,7 @@
     "busboy": "^1.6.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "cookie": "^1.0.1",
     "cross-env": "^7.0.3",
     "docx": "^9.0.2",
     "formidable": "^3.5.2",

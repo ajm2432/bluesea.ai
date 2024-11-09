@@ -31,8 +31,8 @@ export default function Home() {
     const cognitoidentityserviceprovider = new AWS.CognitoIdentityServiceProvider({ region: 'us-east-1' });
 
     useEffect(() => {
-        const accessToken = localStorage.getItem('accessToken');
-        const refreshToken = localStorage.getItem('refreshToken');
+        const accessToken = getCookie('accessToken');
+        const refreshToken = getCookie('refreshToken');
         if (accessToken && !isTokenExpired(accessToken)) {
             setIsAuthenticated(true);
         } else if (refreshToken) {
@@ -71,9 +71,9 @@ export default function Home() {
                 const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
     
                 if (AccessToken && IdToken && RefreshToken) {
-                    localStorage.setItem('accessToken', AccessToken);
-                    localStorage.setItem('idToken', IdToken);
-                    localStorage.setItem('refreshToken', RefreshToken);
+                    setCookie('accessToken', AccessToken);
+                    setCookie('idToken', IdToken);
+                    setCookie('refreshToken', RefreshToken);
                     setIsAuthenticated(true);
                 } else {
                     setErrorMessage('One or more tokens are missing from the authentication result');
@@ -90,61 +90,44 @@ export default function Home() {
     };
 
     const handleLogin = async (username: string, password: string) => {
-        console.log('Attempting login with', { username });
-
-        const clientId = process.env.NEXT_PUBLIC_CLIENT_ID;
-        if (!clientId) {
-            setErrorMessage("Client ID is not defined");
-            setShowErrorModal(true);
-            return;
-        }
-
-        const params = {
-            AuthFlow: "USER_PASSWORD_AUTH",
-            AuthParameters: {
-                "PASSWORD": password,
-                "USERNAME": username
-            },
-            ClientId: clientId
-        };
-
-        try {
-            const data = await cognitoidentityserviceprovider.initiateAuth(params).promise();
-            if (data.ChallengeName === "NEW_PASSWORD_REQUIRED") {
-                console.log("New password required.");
-                setChallengeSession(data.Session || null);
-                setChallengeParameters(data.ChallengeParameters);
-                setShowNewPassword(true);
-            } else if (data.AuthenticationResult) {
-                const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
-
-                if (AccessToken && IdToken && RefreshToken) {
-                    localStorage.setItem('accessToken', AccessToken);
-                    localStorage.setItem('idToken', IdToken);
-                    localStorage.setItem('refreshToken', RefreshToken);
-                    setIsAuthenticated(true);
-                } else {
-                    setErrorMessage("Login failed: one or more tokens are missing.");
-                    setShowErrorModal(true);
-                }
-            } else {
-                setErrorMessage("Login failed: no authentication result returned.");
-                setShowErrorModal(true);
-            }
-        } catch (err) {
-            const error = err as AWSError;
-            setErrorMessage(error.message || "An unknown error occurred");
-            setShowErrorModal(true);
-        }
-    };
+      setLoading(true);  // Set loading to true when login starts
+      try {
+          const response = await fetch('/api/login', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ username, password }),
+          });
+  
+          const data = await response.json();
+  
+          if (response.ok) {
+              const { accessToken, idToken } = data;
+  
+              // Store access token and ID token in cookies
+              setCookie('accessToken', accessToken);
+              setCookie('idToken', idToken);
+              setIsAuthenticated(true);
+          } else {
+              setErrorMessage(data.error || 'Login failed');
+              setShowErrorModal(true);
+          }
+      } catch (error) {
+        setErrorMessage('An unknown error occurred during login');
+        setShowErrorModal(true);
+    } finally {
+        setLoading(false); // Set loading to false after the login request finishes
+    }
+  };
 
     const handleLogout = () => {
         setIsAuthenticated(false);
         setShowResetPassword(false);
         setShowNewPassword(false);
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('idToken');
-        localStorage.removeItem('refreshToken');
+        removeCookie('accessToken');
+        removeCookie('idToken');
+        removeCookie('refreshToken');
     };
 
     const handleNewPassword = async (newPassword: string) => {
@@ -177,9 +160,9 @@ export default function Home() {
                 const { AccessToken, IdToken, RefreshToken } = data.AuthenticationResult;
     
                 if (AccessToken && IdToken && RefreshToken) {
-                    localStorage.setItem('accessToken', AccessToken);
-                    localStorage.setItem('idToken', IdToken);
-                    localStorage.setItem('refreshToken', RefreshToken);
+                    setCookie('accessToken', AccessToken);
+                    setCookie('idToken', IdToken);
+                    setCookie('refreshToken', RefreshToken);
                     setIsAuthenticated(true);
                 } else {
                     setErrorMessage("Login failed: one or more tokens are missing.");
@@ -212,13 +195,8 @@ export default function Home() {
             ClientId: clientId,
             Username: username
         };
-    const userparams = { // check username
-        UserPoolId: "us-east-1_z2qYAUmNM",
-        Username: username, /* required */
-    };
+        
         try {
-        // const userdata = await cognitoidentityserviceprovider.adminGetUser(userparams).promise();
-        // console.log(userdata)
             const data = await cognitoidentityserviceprovider.forgotPassword(params).promise();
             setSuccessMessage("Please check your email for a verification code");
             setShowSuccessModal(true);
@@ -248,7 +226,6 @@ export default function Home() {
         };
  
         try {
-        
             const data = await cognitoidentityserviceprovider.confirmForgotPassword(resetparams).promise();
             if (data) {
                 setIsAuthenticated(true);
@@ -383,4 +360,20 @@ button: {
     fontSize: '16px',
     cursor: 'pointer',
 },
+};
+
+// Helper functions to manage cookies
+const setCookie = (name: string, value: string) => {
+    document.cookie = `${name}=${value}; path=/; max-age=${60 * 60 * 24 * 365}`;
+};
+
+const getCookie = (name: string): string | null => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+    return null;
+};
+
+const removeCookie = (name: string) => {
+    document.cookie = `${name}=; path=/; max-age=0`;
 };
