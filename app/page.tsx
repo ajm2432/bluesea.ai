@@ -217,8 +217,8 @@ export default function Home() {
         Username: username, /* required */
     };
         try {
-        const userdata = await cognitoidentityserviceprovider.adminGetUser(userparams).promise();
-        console.log(userdata)
+        // const userdata = await cognitoidentityserviceprovider.adminGetUser(userparams).promise();
+        // console.log(userdata)
             const data = await cognitoidentityserviceprovider.forgotPassword(params).promise();
             setSuccessMessage("Please check your email for a verification code");
             setShowSuccessModal(true);
