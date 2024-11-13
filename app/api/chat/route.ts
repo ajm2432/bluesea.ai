@@ -138,7 +138,7 @@ export async function POST(req: Request) {
  ${isRagWorking ? `${retrievedContext}` : "No information found for this query."}
 
  Please provide responses that only use the information you have been given.if the information is not relevant for answering the question, you can redirect the user to a human agent for further assistance.
- Please provide responses if the question can be answered with general IT support knowledge.
+ Please provide responses if the question can be answered with general IT support knowledge, this does NOT include resseting passwords, or unlocking accounts unless you have specific internal knowledge on how to.
 
  ${categoriesContext}
 

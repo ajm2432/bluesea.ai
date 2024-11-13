@@ -240,12 +240,39 @@ type Role = {
   name: string;
 };
 
+type Question = {
+  id: string;
+  question: string;
+};
+
 // Add roles data
 const roles: Role[] = [
   { id: "role1", name: "Human Resources" },
   { id: "role2", name: "Information Technology" },
   { id: "role3", name: "Finance" },
 ];
+
+const questions: Question[] = [
+  { id: "question1", question: "How do I reset my password?" },
+  { id: "question2", question: "Can you explain the steps to install Office 365?" },
+  { id: "question3", question: "Is there a way to escalate my issue to a live agent?" },
+];
+
+
+function fisherYatesShuffleNames(array: Question[]): string[] {
+  const shuffledRoles = [...array];
+
+  for (let i = shuffledRoles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledRoles[i], shuffledRoles[j]] = [shuffledRoles[j], shuffledRoles[i]];
+  }
+  
+  // Return only the names as a string array
+  return shuffledRoles.map(question => question.question);
+}
+
+const newquestion = fisherYatesShuffleNames(questions)
+
 
 // Define a type for companies
 type Company = {
@@ -383,11 +410,11 @@ function ChatArea() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [selectedKnowledgeBase, setSelectedKnowledgeBase] = useState(
-    "your-knowledge-base-id",
+    "XJIXBYKEMJ",
   );
 
   const knowledgeBases: KnowledgeBase[] = [
-    { id: "your-knowledge-base-id", name: "KB Name" },
+    { id: "XJIXBYKEMJ", name: "General KB" },
     // Add more knowledge bases as needed
   ];
 
@@ -764,6 +791,14 @@ try {
                     can assist you.
                   </p>
                 </div>
+
+              </div>
+              <div>
+              <SuggestedQuestions
+                    questions={newquestion}
+                    onQuestionClick={handleSuggestedQuestionClick}
+                    isLoading={isLoading}
+                  />
               </div>
             </div>
           ) : (
@@ -873,5 +908,7 @@ try {
     </Card>
   );
 }
+
+
 
 export default ChatArea;
