@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+// Define color themes
 const themeColors = {
   neutral: "#000000",
   red: "#EF4444",
@@ -24,6 +25,7 @@ const themeColors = {
 
 type ThemeName = keyof typeof themes;
 
+// ColorCircle component for selecting theme colors
 const ColorCircle = ({
   themeName,
   isSelected,
@@ -44,10 +46,11 @@ const ColorCircle = ({
 );
 
 interface TopNavBarProps {
-  onLogout: () => void; // Define the type for onLogout as a function with no parameters and no return value
+  onLogout: () => void;
+  onManageLibraryClick: () => void; // Function to handle "Manage Library" click
 }
 
-const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout }) => {
+const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout, onManageLibraryClick }) => {
   const { theme, setTheme } = useTheme();
   const [colorTheme, setColorTheme] = useState<ThemeName>("blue");
   const [mounted, setMounted] = useState(false);
@@ -91,15 +94,15 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout }) => {
   return (
     <nav className="text-foreground p-4 flex justify-between items-center">
       <div className="font-bold text-xl flex gap-2 items-center">
-      <Image
-          src="/wave.png" // Change to wave.png to match LoginForm
+        <Image
+          src="/wave.png"
           alt="Wave Logo"
-          width={30} // Change width to match LoginForm
-          height={30} // Change height to match LoginForm
+          width={30}
+          height={30}
         />
         <h2
           style={{
-            color: theme === "dark" ? "#fff" : "#333", // Change color to match LoginForm
+            color: theme === "dark" ? "#fff" : "#333",
             margin: 0,
           }}
         >
@@ -149,6 +152,10 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout }) => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        {/* Manage Library Button, triggers the passed function to toggle visibility */}
+        <Button variant="outline" onClick={onManageLibraryClick}>
+          Manage Library
+        </Button>
         <Button variant="outline" onClick={onLogout}>
           Logout
         </Button>

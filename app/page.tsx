@@ -6,6 +6,7 @@ import MainContent from '../components/app';
 import LoginForm from '../components/LoginForm';
 import NewPasswordForm from '../components/NewPasswordForm';
 import ResetPasswordForm from '../components/ResetPasswordForm';
+import ManageLibrary from '../components/ManageLibrary';
 import {
   Dialog,
   DialogContent,
@@ -26,10 +27,13 @@ export default function Home() {
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showResetPassword, setShowResetPassword] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [showManageLibrary, setShowManageLibrary] = useState(false);
     const [loading, setLoading] = useState(true);
     
     const cognitoidentityserviceprovider = new AWS.CognitoIdentityServiceProvider({ region: 'us-east-1' });
-
+    const toggleManageLibrary = () => {
+      setShowManageLibrary((prev) => !prev);
+    };
     useEffect(() => {
         const accessToken = getCookie('accessToken');
         const refreshToken = getCookie('refreshToken');
@@ -251,19 +255,28 @@ export default function Home() {
     return (
         <div>
             {isAuthenticated ? (
-                <div>
-                    <TopNavBar onLogout={handleLogout} />
-                    <MainContent />
-                </div>
-            ) : showResetPassword ? (
-                <ResetPasswordForm onSubmit={handleForgotPassword} />
-            ) : showNewPassword ? (
-                <NewPasswordForm onSubmit={handleNewPassword} />
-            ) : (
-                <div>
-                    <LoginForm onLogin={handleLogin} onToggle={switchForgotPassword} />
-                </div>
-            )}
+            <div>
+               <TopNavBar onLogout={() => setIsAuthenticated(false)} onManageLibraryClick={toggleManageLibrary} />
+                {showManageLibrary ? (
+            <div style={{ width: '100%', height: '100vh' }}>
+               <ManageLibrary />
+            </div>
+       ) : (
+         <>
+           <MainContent />
+          </>
+       )}
+      </div>
+      ) : showResetPassword ? (
+        <ResetPasswordForm onSubmit={handleForgotPassword} />
+      ) : showNewPassword ? (
+        <NewPasswordForm onSubmit={handleNewPassword} />
+      ) : (
+      <div>
+        <LoginForm onLogin={handleLogin} onToggle={switchForgotPassword} />
+      </div>
+    )}
+
 
             <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
                 <DialogContent style={styles.modal}>

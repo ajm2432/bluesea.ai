@@ -110,7 +110,7 @@ const SuggestedQuestions = ({
       {questions.map((question, index) => (
         <Button
           key={index}
-          className="text-sm mb-2 mr-2 ml-0 text-gray-500 shadow-sm"
+          className="text-sm text-center mb-2 mr-2 ml-0 text-gray-500 shadow-sm"
           variant="outline"
           size="sm"
           onClick={() => onQuestionClick(question)}
@@ -255,20 +255,24 @@ const roles: Role[] = [
 const questions: Question[] = [
   { id: "question1", question: "How do I reset my password?" },
   { id: "question2", question: "Can you explain the steps to install Office 365?" },
-  { id: "question3", question: "Is there a way to escalate my issue to a live agent?" },
+  { id: "question3", question: "What should I do if I can't connect to the company VPN?" },
+  { id: "question4", question: "How do I set up multi-factor authentication for my account?" },
+  { id: "question5", question: "How can I submit a ticket for IT support?" },
+  { id: "question6", question: "How do I check my PTO?" },
+  { id: "question7", question: "How do I submit an expense report?" },
 ];
 
 
 function fisherYatesShuffleNames(array: Question[]): string[] {
-  const shuffledRoles = [...array];
+  const shuffledQuestions = [...array];
 
-  for (let i = shuffledRoles.length - 1; i > 0; i--) {
+  for (let i = shuffledQuestions.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [shuffledRoles[i], shuffledRoles[j]] = [shuffledRoles[j], shuffledRoles[i]];
+    [shuffledQuestions[i], shuffledQuestions[j]] = [shuffledQuestions[j], shuffledQuestions[i]];
   }
   
-  // Return only the names as a string array
-  return shuffledRoles.map(question => question.question);
+  // Return only the questions as a string array
+  return shuffledQuestions.slice(0, 3).map(question => question.question);
 }
 
 const newquestion = fisherYatesShuffleNames(questions)
@@ -324,7 +328,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
       
       <div className="flex space-x-2 w-full sm:w-auto">
         {/* Company Dropdown */}
-      <DropdownMenu>
+      {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
@@ -345,7 +349,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
             </DropdownMenuItem>
           ))}
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
         {/* Knowledge Base Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -371,7 +375,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
         </DropdownMenu>
 
         {/* Role Dropdown */}
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
@@ -392,7 +396,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </div>
     </div>
   );
@@ -414,7 +418,7 @@ function ChatArea() {
   );
 
   const knowledgeBases: KnowledgeBase[] = [
-    { id: "XJIXBYKEMJ", name: "General KB" },
+    { id: "XJIXBYKEMJ", name: "Knowledge Base" },
     // Add more knowledge bases as needed
   ];
 
@@ -794,6 +798,8 @@ try {
 
               </div>
               <div>
+              </div>
+              <div className="text-center pt-10">
               <SuggestedQuestions
                     questions={newquestion}
                     onQuestionClick={handleSuggestedQuestionClick}
