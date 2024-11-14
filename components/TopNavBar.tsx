@@ -11,7 +11,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import {
+  HandHelping,
+  WandSparkles,
+  LifeBuoyIcon,
+  BookOpenText,
+  ChevronDown,
+  Send,
+  Upload,
+} from "lucide-react";
 // Define color themes
 const themeColors = {
   neutral: "#000000",
@@ -50,9 +58,23 @@ interface TopNavBarProps {
   onManageLibraryClick: () => void; // Function to handle "Manage Library" click
 }
 
+// Define a type for tools
+type Tool = {
+  id: string;
+  name: string;
+};
+
+// Add tools data
+const tools: Tool[] = [
+  { id: "tool1", name: "Personal AI" },
+  { id: "tool2", name: "Report Creator" },
+  { id: "tool3", name: "PowerPoint Creator" },
+];
+
 const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout, onManageLibraryClick }) => {
   const { theme, setTheme } = useTheme();
   const [colorTheme, setColorTheme] = useState<ThemeName>("blue");
+  const [selectedtool, setSelectedtool] = useState(tools[0].id); 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -110,7 +132,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout, onManageLibraryClick })
         </h2>
       </div>
       <div className="flex items-center gap-2">
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline">
               <ColorCircle themeName={colorTheme} isSelected={false} />
@@ -131,7 +153,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout, onManageLibraryClick })
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon">
@@ -150,6 +172,28 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout, onManageLibraryClick })
             <DropdownMenuItem onClick={() => handleModeChange("system")}>
               System
             </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-grow text-muted-foreground sm:flex-grow-0"
+            >
+              {tools.find((tool) => tool.id === selectedtool)?.name || "Select tool"}
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {tools.map((tool) => (
+            <DropdownMenuItem
+              key={tool.id}
+              onSelect={() => setSelectedtool(tool.id)}
+            >
+              {tool.name}
+            </DropdownMenuItem>
+          ))}
           </DropdownMenuContent>
         </DropdownMenu>
         {/* Manage Library Button, triggers the passed function to toggle visibility */}

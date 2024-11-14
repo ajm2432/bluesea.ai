@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "WavyLogic",
-  description: "Your company's internal AI by WavyLogic.ai",
+  description: "AI by WavyLogic.ai",
 };
 
 export default function RootLayout({
