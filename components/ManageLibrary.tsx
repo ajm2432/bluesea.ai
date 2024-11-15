@@ -71,7 +71,7 @@ const ManageLibrary = () => {
                 <Tr>
                   <Th className="border-b py-4 px-6">Knowledge Base</Th>
                   <Th className="border-b py-4 px-6">Documents</Th>
-                  <Th className="border-b py-4 px-6">Actions</Th> {/* New column for actions */}
+                  <Th className="border-b py-4 px-6"></Th> {/* New column for actions */}
                 </Tr>
               </thead>
               <Tbody>
