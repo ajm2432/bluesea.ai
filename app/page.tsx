@@ -7,6 +7,7 @@ import LoginForm from '../components/LoginForm';
 import NewPasswordForm from '../components/NewPasswordForm';
 import ResetPasswordForm from '../components/ResetPasswordForm';
 import ManageLibrary from '../components/ManageLibrary';
+import UploadKnowledgebase from '../components/UploadknowledgeBase'
 import {
   Dialog,
   DialogContent,
@@ -28,11 +29,18 @@ export default function Home() {
     const [showResetPassword, setShowResetPassword] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [showManageLibrary, setShowManageLibrary] = useState(false);
+    const [showKnowledgebaseUpload, setShowKnowledgebaseUpload] = useState(false);
     const [loading, setLoading] = useState(true);
     
     const cognitoidentityserviceprovider = new AWS.CognitoIdentityServiceProvider({ region: 'us-east-1' });
     const toggleManageLibrary = () => {
       setShowManageLibrary((prev) => !prev);
+    };
+    const handleSaveChanges = () => {
+      setShowManageLibrary(false);
+    };
+    const handleDocumentUploads = () => {
+      setShowKnowledgebaseUpload(true);
     };
     useEffect(() => {
         const accessToken = getCookie('accessToken');
@@ -114,7 +122,7 @@ export default function Home() {
               setCookie('idToken', idToken);
               setIsAuthenticated(true);
           } else {
-              setErrorMessage(data.error || 'Login failed');
+              setErrorMessage(data.error);
               setShowErrorModal(true);
           }
       } catch (error) {
@@ -251,142 +259,155 @@ export default function Home() {
             </div>
         );
     }
-
+    const fullScreenStyle = {
+      position: 'fixed',        // Ensure the component is fixed relative to the viewport
+      top: 0,                   // Start from the top of the screen
+      left: 0,                  // Start from the left edge of the screen
+      width: '100%',            // Occupy full width
+      height: '100vh',          // Occupy full height of the viewport
+      backgroundColor: '#fff',  // Optionally set a background color (e.g., white)
+      zIndex: 1000,             // Ensure it's on top of other components
+      overflow: 'auto'          // Add scrolling if content overflows
+    };    
     return (
-        <div>
-            {isAuthenticated ? (
-            <div>
-               <TopNavBar onLogout={() => setIsAuthenticated(false)} onManageLibraryClick={toggleManageLibrary} />
-                {showManageLibrary ? (
-            <div style={{ width: '100%', height: '100vh' }}>
-               <ManageLibrary />
-            </div>
-       ) : (
-         <>
-           <MainContent />
-          </>
-       )}
-      </div>
-      ) : showResetPassword ? (
-        <ResetPasswordForm onSubmit={handleForgotPassword} />
-      ) : showNewPassword ? (
-        <NewPasswordForm onSubmit={handleNewPassword} />
-      ) : (
       <div>
-        <LoginForm onLogin={handleLogin} onToggle={switchForgotPassword} />
+        {isAuthenticated ? (
+          <div>
+            <TopNavBar 
+              onLogout={() => setIsAuthenticated(false)} 
+              onManageLibraryClick={toggleManageLibrary} 
+            />
+            {showManageLibrary ? (
+              <div style={{ width: '100%', height: '100vh' }}>
+                <ManageLibrary 
+                  onSaveChanges={handleSaveChanges} 
+                  onAddKnowledgebase={handleDocumentUploads} 
+                />
+                {/* Only show UploadKnowledgebase if showKnowledgebaseUpload is true */}
+                {showKnowledgebaseUpload && (
+                  <div style={{ width: '100%', height: '100vh' }}>
+                    <UploadKnowledgebase />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <MainContent />
+            )}
+          </div>
+        ) : showResetPassword ? (
+          <ResetPasswordForm onSubmit={handleForgotPassword} />
+        ) : showNewPassword ? (
+          <NewPasswordForm onSubmit={handleNewPassword} />
+        ) : (
+          <LoginForm onLogin={handleLogin} onToggle={switchForgotPassword} />
+        )}
+    
+        {/* Error Dialog */}
+        <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
+          <DialogContent style={styles.modal}>
+            <DialogHeader>
+              <DialogTitle style={styles.modalTitle}>Error</DialogTitle>
+            </DialogHeader>
+            <div style={styles.modalContent}>{errorMessage}</div>
+            <DialogFooter>
+              <button 
+                onClick={() => setShowErrorModal(false)}
+                style={styles.button}
+              >
+                Close
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+    
+        {/* Success Dialog */}
+        <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+          <DialogContent style={styles.modal}>
+            <DialogHeader>
+              <DialogTitle style={styles.modalTitle}>Check Your Inbox 📧</DialogTitle>
+            </DialogHeader>
+            <div style={styles.modalContent}>{successMessage}</div>
+            <DialogFooter>
+              <button 
+                onClick={() => setShowSuccessModal(false)}
+                style={styles.button}
+              >
+                Close
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-    )}
-
-
-            <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
-                <DialogContent style={styles.modal}>
-                    <DialogHeader>
-                        <DialogTitle style={styles.modalTitle}>Error</DialogTitle>
-                    </DialogHeader>
-                    <div style={styles.modalContent}>
-                        {errorMessage}
-                    </div>
-                    <DialogFooter>
-                        <button 
-                            onClick={() => setShowErrorModal(false)}
-                            style={styles.button}
-                        >
-                            Close
-                        </button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-                <DialogContent style={styles.modal}>
-                    <DialogHeader>
-                        <DialogTitle style={styles.modalTitle}>Check Your Inbox 📧</DialogTitle>
-                    </DialogHeader>
-                    <div style={styles.modalContent}>
-                        {successMessage}
-                    </div>
-                    <DialogFooter>
-                        <button 
-                            onClick={() => setShowSuccessModal(false)}
-                            style={styles.button}
-                        >
-                            Close
-                        </button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-        </div>
     );
-}
-
-const styles = {
-  loadingContainer: {
+  };
+  
+  const styles = {
+    loadingContainer: {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       height: '100vh',
       backgroundColor: '#f0f0f0',
-  },
-  logo: {
+    },
+    logo: {
       width: '100px',
       animation: 'spin 2s linear infinite',
-  },
-  '@keyframes spin': {
+    },
+    '@keyframes spin': {
       '0%': {
-          transform: 'rotate(0deg)',
+        transform: 'rotate(0deg)',
       },
       '100%': {
-          transform: 'rotate(360deg)',
+        transform: 'rotate(360deg)',
       },
-  },
-
-  modal: {
-    background: 'white',
-    padding: '2rem',
-    borderRadius: '8px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-    width: '300px',
-    border: 'none',
-},
-modalTitle: {
-    margin: 0,
-    fontSize: '1.25rem',
-    fontWeight: 600,
-    color: '#333',
-    textAlign: 'center' as const,
-},
-modalContent: {
-    fontSize: '14px',
-    color: '#666',
-    marginBottom: '1rem',
-    textAlign: 'center' as const,
-    padding: '1rem 0',
-},
-button: {
-    width: '100%',
-    padding: '0.5rem',
-    borderRadius: '4px',
-    border: 'none',
-    backgroundColor: '#007bff',
-    marginBottom: '16px',
-    color: 'white',
-    fontSize: '16px',
-    cursor: 'pointer',
-},
-};
-
-// Helper functions to manage cookies
-const setCookie = (name: string, value: string) => {
+    },
+    modal: {
+      background: 'white',
+      padding: '2rem',
+      borderRadius: '8px',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+      width: '300px',
+      border: 'none',
+    },
+    modalTitle: {
+      margin: 0,
+      fontSize: '1.25rem',
+      fontWeight: 600,
+      color: '#333',
+      textAlign: 'center' as const,
+    },
+    modalContent: {
+      fontSize: '14px',
+      color: '#666',
+      marginBottom: '1rem',
+      textAlign: 'center' as const,
+      padding: '1rem 0',
+    },
+    button: {
+      width: '100%',
+      padding: '0.5rem',
+      borderRadius: '4px',
+      border: 'none',
+      backgroundColor: '#007bff',
+      marginBottom: '16px',
+      color: 'white',
+      fontSize: '16px',
+      cursor: 'pointer',
+    },
+  };
+  
+  // Helper functions to manage cookies
+  const setCookie = (name: string, value: string) => {
     document.cookie = `${name}=${value}; path=/; max-age=${60 * 60 * 24 * 365}`;
-};
-
-const getCookie = (name: string): string | null => {
+  };
+  
+  const getCookie = (name: string): string | null => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
     if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
     return null;
-};
-
-const removeCookie = (name: string) => {
+  };
+  
+  const removeCookie = (name: string) => {
     document.cookie = `${name}=; path=/; max-age=0`;
-};
+  };
