@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-// @ts-ignore
+
 // Helper function to chunk files
-const chunkFile = (file, chunkSize) => {
+const chunkFile = (file: File, chunkSize: number) => {
   const chunks = [];
   let offset = 0;
   while (offset < file.size) {
@@ -14,81 +14,94 @@ const chunkFile = (file, chunkSize) => {
 };
 
 const FileUploadMultipart = () => {
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // Handle multiple files
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({}); // Track progress per file
   const [uploading, setUploading] = useState(false);
   const [showModal, setShowModal] = useState(true); // To manage modal visibility
-  //@ts-ignore
-  const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+
+  // Handle file or directory selection
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    setSelectedFiles(files); // Update state to handle multiple files
+  };
+
+  // Update progress of a single file
+  const updateProgress = (fileName: string, progress: number) => {
+    setUploadProgress((prevProgress) => ({
+      ...prevProgress,
+      [fileName]: progress,
+    }));
   };
 
   const handleUpload = async () => {
-    if (!selectedFile) return;
+    if (selectedFiles.length === 0) return;
 
     setUploading(true);
     const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB chunks
-    const fileChunks = chunkFile(selectedFile, CHUNK_SIZE);
-    const totalParts = fileChunks.length;
 
     try {
-      // Step 1: Initiate multipart upload
-      const initResponse = await fetch('YOUR_API_ENDPOINT/initiate-upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-        //@ts-ignore
-          file_name: selectedFile.name,
-          part_count: totalParts,
-        }),
-      });
+      // Step 1: Initiate multipart uploads for all files
+      const initResponses = await Promise.all(selectedFiles.map(async (file) => {
+        const fileChunks = chunkFile(file, CHUNK_SIZE);
+        const totalParts = fileChunks.length;
 
-      const initData = await initResponse.json();
-      const uploadId = initData.upload_id;
-      const presignedUrls = initData.presigned_urls;
+        const initResponse = await fetch('YOUR_API_ENDPOINT/initiate-upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            file_name: file.name,
+            part_count: totalParts,
+          }),
+        });
 
-      // Step 2: Upload each part
-      const uploadPromises = fileChunks.map((chunk, index) => {
-        const { part_number, url } = presignedUrls[index];
+        return initResponse.json(); // Will return { upload_id, presigned_urls }
+      }));
 
-        return fetch(url, {
-          method: 'PUT',
-          body: chunk,
-        }).then((response) => {
-          if (!response.ok) throw new Error('Upload failed for part ' + part_number);
-          return response.headers.get('ETag'); // Needed for the complete request
+      const allUploadIds = initResponses.map(response => response.upload_id);
+      const allPresignedUrls = initResponses.map(response => response.presigned_urls);
+
+      // Step 2: Upload each part for each file
+      const uploadPromises = selectedFiles.map((file, index) => {
+        const fileChunks = chunkFile(file, CHUNK_SIZE);
+        const uploadId = allUploadIds[index];
+        const presignedUrls = allPresignedUrls[index];
+
+        const uploadPartPromises = fileChunks.map((chunk, partIndex) => {
+          const { part_number, url } = presignedUrls[partIndex];
+
+          return fetch(url, {
+            method: 'PUT',
+            body: chunk,
+          }).then((response) => {
+            if (!response.ok) throw new Error('Upload failed for part ' + part_number);
+
+            // Update progress for this file after each part is uploaded
+            updateProgress(file.name, ((partIndex + 1) / fileChunks.length) * 100);
+            return response.headers.get('ETag'); // Needed for the complete request
+          });
+        });
+
+        return Promise.all(uploadPartPromises).then((etags) => {
+          // Step 3: Complete multipart upload for each file
+          return fetch('YOUR_API_ENDPOINT/complete-upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              file_name: file.name,
+              upload_id: uploadId,
+              parts: etags.map((etag, partIndex) => ({
+                ETag: etag,
+                PartNumber: partIndex + 1,
+              })),
+            }),
+          });
         });
       });
 
-      // Track progress
-      let uploadedParts = 0;
-      const etags = await Promise.all(
-        uploadPromises.map((promise) =>
-          promise.then((etag) => {
-            uploadedParts += 1;
-            setUploadProgress((uploadedParts / totalParts) * 100);
-            return etag;
-          })
-        )
-      );
-      
-      // Step 3: Complete multipart upload
-      await fetch('YOUR_API_ENDPOINT/complete-upload', {
-      
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            //@ts-ignore
-          file_name: selectedFile.name,
-          upload_id: uploadId,
-          parts: etags.map((etag, index) => ({
-            ETag: etag,
-            PartNumber: index + 1,
-          })),
-        }),
-      });
+      // Track overall progress across all files
+      await Promise.all(uploadPromises);
 
-      alert('Upload completed successfully');
+      alert('All uploads completed successfully');
     } catch (error) {
       console.error('Multipart upload error:', error);
       alert('Upload failed');
@@ -114,6 +127,9 @@ const FileUploadMultipart = () => {
                   <input
                     type="file"
                     onChange={handleFileChange}
+                    multiple
+                    //@ts-ignore
+                    webkitdirectory="true" // Allow directories to be selected
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border file:border-gray-300 file:rounded-md file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
                 </div>
@@ -121,23 +137,28 @@ const FileUploadMultipart = () => {
                   {/* Upload Button */}
                   <Button
                     onClick={handleUpload}
-                    disabled={uploading || !selectedFile}
+                    disabled={uploading || selectedFiles.length === 0}
                     className="w-full"
                   >
-                    {uploading ? 'Uploading...' : 'Upload File'}
+                    {uploading ? 'Uploading...' : 'Upload Files'}
                   </Button>
                 </div>
                 {uploading && (
                   <div className="mb-4">
-                    {/* Progress Bar */}
-                    <progress
-                      value={uploadProgress}
-                      max="100"
-                      className="w-full h-2 rounded bg-gray-200"
-                    ></progress>
-                    <p className="text-center mt-2 text-sm">
-                      {uploadProgress.toFixed(2)}% complete
-                    </p>
+                    {/* Progress Bars for Multiple Files */}
+                    {selectedFiles.map((file) => (
+                      <div key={file.name} className="mb-2">
+                        <p>{file.name}</p>
+                        <progress
+                          value={uploadProgress[file.name] || 0}
+                          max="100"
+                          className="w-full h-2 rounded bg-gray-200"
+                        ></progress>
+                        <p className="text-center mt-2 text-sm">
+                          {uploadProgress[file.name]?.toFixed(2)}% complete
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 )}
               </CardContent>

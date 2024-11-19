@@ -50,6 +50,7 @@ export default function LoginForm({
                 {({ values }) => (
                     <Form style={styles.form}>
                         <div style={styles.titleContainer}>
+                            
                             <img src="/wave.png" alt="Wave" style={styles.logo} />
                             <h2
                                 style={{

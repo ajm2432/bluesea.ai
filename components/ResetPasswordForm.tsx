@@ -1,8 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import { useTheme } from 'next-themes';
+import MainContent from '../app/page'; // Import MainContent
 
 // Define the type for the props
 interface ResetPasswordFormProps {
@@ -12,118 +13,134 @@ interface ResetPasswordFormProps {
 export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) {
     const { theme } = useTheme();
     const isDarkMode = theme === 'dark';
+    
+    // State to control showing of MainContent
+    const [showMainContent, setShowMainContent] = useState(false);
+
+    // Handler to show MainContent when image is clicked
+    const handleImageClick = () => {
+        setShowMainContent(true);
+    };
 
     return (
         <div style={styles.container}>
-            <Formik
-                initialValues={{
-                    newPassword: '',
-                    confirmPassword: '',
-                    username: '',
-                    code: '',
-                }}
-                validate={(values) => {
-                    const errors: { newPassword?: string; confirmPassword?: string } = {}; // Initialize errors object
-                    if (!values.newPassword) {
-                        errors.newPassword = 'Required';
-                    } else if (values.newPassword.length < 8) {
-                        errors.newPassword = 'Password must be at least 8 characters';
-                    }
-                    if (!values.confirmPassword) {
-                        errors.confirmPassword = 'Required';
-                    } else if (values.confirmPassword !== values.newPassword) {
-                        errors.confirmPassword = 'Passwords must match';
-                    }
-                    return errors;
-                }}
-                onSubmit={(values) => {
-                    // Pass the values correctly as separate arguments to the parent onSubmit function
-                    onSubmit(values.newPassword, values.username, values.code  );
-                }}
-            >
-                {() => (
-                    <Form style={styles.form}>
-                        <div style={styles.titleContainer}>
-                            <img src="/wave.png" alt="Wave" style={styles.logo} />
-                            <h2
-                                style={{
+            {showMainContent ? (
+                <MainContent /> // Render MainContent when showMainContent is true
+            ) : (
+                <Formik
+                    initialValues={{
+                        newPassword: '',
+                        confirmPassword: '',
+                        username: '',
+                        code: '',
+                    }}
+                    validate={(values) => {
+                        const errors: { newPassword?: string; confirmPassword?: string } = {}; // Initialize errors object
+                        if (!values.newPassword) {
+                            errors.newPassword = 'Required';
+                        } else if (values.newPassword.length < 8) {
+                            errors.newPassword = 'Password must be at least 8 characters';
+                        }
+                        if (!values.confirmPassword) {
+                            errors.confirmPassword = 'Required';
+                        } else if (values.confirmPassword !== values.newPassword) {
+                            errors.confirmPassword = 'Passwords must match';
+                        }
+                        return errors;
+                    }}
+                    onSubmit={(values) => {
+                        // Pass the values correctly as separate arguments to the parent onSubmit function
+                        onSubmit(values.newPassword, values.username, values.code);
+                    }}
+                >
+                    {() => (
+                        <Form style={styles.form}>
+                            <div
+                                style={{ ...styles.titleContainer, cursor: 'pointer' }} // Added cursor: pointer
+                                onClick={handleImageClick}
+                                >
+                                {/* The image */}
+                                <img
+                                    src="/wave.png"
+                                    alt="Wave"
+                                    style={styles.logo}
+                                />
+                                <h2
+                                    style={{
                                     ...styles.title,
                                     color: isDarkMode ? '#000' : '#333',
-                                }}
-                            >
-                                WavyLogic.ai
-                            </h2>
-                        </div>
-                        <div>
-                            <h2
-                                style={{
-                                    ...styles.title,
-                                    color: isDarkMode ? '#000' : '#333',
-                                    textAlign: 'center',
-                                    paddingBottom:'16px'
-                                }}
-                            >
-                                Please set a new password
-                            </h2>
-                        </div>
-                        <div style={styles.inputGroup}>
-                            <Field
-                                type="text"
-                                id="username"
-                                name="username"
-                                placeholder="Username"
-                                style={styles.input}
-                            />
-                            <div style={styles.error}>
-                            <ErrorMessage name="username" component="div"/>
+                                    }}
+                                >
+                                    WavyLogic.ai
+                                </h2>
+                                </div>
+                            <div>
+                                <h2
+                                    style={{
+                                        ...styles.title,
+                                        color: isDarkMode ? '#000' : '#333',
+                                        textAlign: 'center',
+                                        paddingBottom: '16px'
+                                    }}
+                                >
+                                    Please set a new password
+                                </h2>
                             </div>
-                            
-                        </div>
-                        <div style={styles.inputGroup}>
-                            <Field
-                                type="text"
-                                id="code"
-                                name="code"
-                                placeholder="Verification Code"
-                                style={styles.input}
-                            />
-                            <div style={styles.error}>
-                            <ErrorMessage name="code" component="div"/>
+                            <div style={styles.inputGroup}>
+                                <Field
+                                    type="text"
+                                    id="username"
+                                    name="username"
+                                    placeholder="Username"
+                                    style={styles.input}
+                                />
+                                <div style={styles.error}>
+                                    <ErrorMessage name="username" component="div" />
+                                </div>
                             </div>
-                            
-                        </div>
-                        <div style={styles.inputGroup}>
-                            <Field
-                                type="password"
-                                id="newPassword"
-                                name="newPassword"
-                                placeholder="New Password"
-                                style={styles.input}
-                            />
-                            <div style={styles.error}>
-                            <ErrorMessage name="newPassword" component="div"/>
+                            <div style={styles.inputGroup}>
+                                <Field
+                                    type="text"
+                                    id="code"
+                                    name="code"
+                                    placeholder="Verification Code"
+                                    style={styles.input}
+                                />
+                                <div style={styles.error}>
+                                    <ErrorMessage name="code" component="div" />
+                                </div>
                             </div>
-                            
-                        </div>
-                        <div style={styles.inputGroup}>
-                            <Field
-                                type="password"
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                placeholder="Confirm Password"
-                                style={styles.input}
-                            />
-                            <div style={styles.error}>
-                            <ErrorMessage name="confirmPassword" component="div"  />
+                            <div style={styles.inputGroup}>
+                                <Field
+                                    type="password"
+                                    id="newPassword"
+                                    name="newPassword"
+                                    placeholder="New Password"
+                                    style={styles.input}
+                                />
+                                <div style={styles.error}>
+                                    <ErrorMessage name="newPassword" component="div" />
+                                </div>
                             </div>
-                            
-                        </div>
-                        <button type="submit" style={styles.button}>
-                            Set New Password
-                        </button>
-                    </Form>
-                )}
-            </Formik>
+                            <div style={styles.inputGroup}>
+                                <Field
+                                    type="password"
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    placeholder="Confirm Password"
+                                    style={styles.input}
+                                />
+                                <div style={styles.error}>
+                                    <ErrorMessage name="confirmPassword" component="div" />
+                                </div>
+                            </div>
+                            <button type="submit" style={styles.button}>
+                                Set New Password
+                            </button>
+                        </Form>
+                    )}
+                </Formik>
+            )}
         </div>
     );
 }
@@ -154,6 +171,7 @@ const styles = {
         width: '30px',
         height: '30px',
         marginRight: '10px',
+        cursor: 'pointer', // Add cursor style to indicate it's clickable
     },
     title: {
         margin: 0,
