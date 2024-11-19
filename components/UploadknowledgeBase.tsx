@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
+type UploadProps = {
+  onClose: () => void;  // This prop should be passed in correctly when using this component
+};
+
 // Helper function to chunk files
 const chunkFile = (file: File, chunkSize: number) => {
   const chunks = [];
@@ -13,7 +17,7 @@ const chunkFile = (file: File, chunkSize: number) => {
   return chunks;
 };
 
-const FileUploadMultipart = () => {
+const FileUploadMultipart = ({ onClose }: UploadProps) => {  // onClose comes from props
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // Handle multiple files
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({}); // Track progress per file
   const [uploading, setUploading] = useState(false);
@@ -112,6 +116,7 @@ const FileUploadMultipart = () => {
 
   const handleCloseModal = () => {
     setShowModal(false); // Close the modal after upload starts
+    onClose()
   };
 
   return (
@@ -163,6 +168,7 @@ const FileUploadMultipart = () => {
                 )}
               </CardContent>
               <CardFooter className="p-6 flex justify-between">
+                {/* Close Button */}
                 <Button onClick={handleCloseModal} disabled={uploading}>
                   Close
                 </Button>

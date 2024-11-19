@@ -42,6 +42,10 @@ export default function Home() {
     const handleDocumentUploads = () => {
       setShowKnowledgebaseUpload(true);
     };
+
+    const handleUploadClose = () => {
+      setShowKnowledgebaseUpload(false);
+    };
     useEffect(() => {
         const accessToken = getCookie('accessToken');
         const refreshToken = getCookie('refreshToken');
@@ -278,21 +282,21 @@ export default function Home() {
               onManageLibraryClick={toggleManageLibrary} 
             />
             {showManageLibrary ? (
-              <div style={{ width: '100%', height: '100vh' }}>
-                <ManageLibrary 
-                  onSaveChanges={handleSaveChanges} 
-                  onAddKnowledgebase={handleDocumentUploads} 
-                />
-                {/* Only show UploadKnowledgebase if showKnowledgebaseUpload is true */}
-                {showKnowledgebaseUpload && (
-                  <div style={{ width: '100%', height: '100vh' }}>
-                    <UploadKnowledgebase />
-                  </div>
-                )}
-              </div>
-            ) : (
-              <MainContent />
-            )}
+            <div style={{ width: '100%', height: '100vh' }}>
+              <ManageLibrary 
+                onSaveChanges={handleSaveChanges} 
+                onAddKnowledgebase={handleDocumentUploads} 
+              />
+              {/* Only show UploadKnowledgebase if showKnowledgebaseUpload is true */}
+              {showKnowledgebaseUpload && (
+                <div style={{ width: '100%', height: '100vh' }}>
+                  <UploadKnowledgebase onClose={handleUploadClose}/>
+                </div>
+              )}
+            </div>
+          ) : (
+            <MainContent />
+          )}
           </div>
         ) : showResetPassword ? (
           <ResetPasswordForm onSubmit={handleForgotPassword} />
