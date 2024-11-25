@@ -66,7 +66,7 @@ export default function ResetPasswordForm({ onSubmit }: ResetPasswordFormProps) 
                     color: isDarkMode ? '#000' : '#333',
                   }}
                 >
-                  WavyLogic.ai
+                  
                 </h2>
               </div>
               <div>

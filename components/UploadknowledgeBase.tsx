@@ -17,24 +17,37 @@ const chunkFile = (file: File, chunkSize: number) => {
   return chunks;
 };
 
-const FileUploadMultipart = ({ onClose }: UploadProps) => {  // onClose comes from props
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]); // Handle multiple files
-  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({}); // Track progress per file
-  const [uploading, setUploading] = useState(false);
-  const [showModal, setShowModal] = useState(true); // To manage modal visibility
+// Helper function to convert a file chunk to ArrayBuffer (binary data)
+const chunkToBinary = (chunk: Blob) => {
+  return new Promise<Uint8Array>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(new Uint8Array(reader.result as ArrayBuffer));
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(chunk);
+  });
+};
 
-  // Handle file or directory selection
+const FileUploadMultipart = ({ onClose }: UploadProps) => { 
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [uploading, setUploading] = useState(false);
+  const [showModal, setShowModal] = useState(true);
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    setSelectedFiles(files); // Update state to handle multiple files
+    setSelectedFiles(files);
   };
 
-  // Update progress of a single file
   const updateProgress = (fileName: string, progress: number) => {
     setUploadProgress((prevProgress) => ({
       ...prevProgress,
       [fileName]: progress,
     }));
+  };
+
+  const updateTotalProgress = () => {
+    const totalProgress = Object.values(uploadProgress).reduce((acc, progress) => acc + progress, 0);
+    return totalProgress / selectedFiles.length;
   };
 
   const handleUpload = async () => {
@@ -49,16 +62,18 @@ const FileUploadMultipart = ({ onClose }: UploadProps) => {  // onClose comes fr
         const fileChunks = chunkFile(file, CHUNK_SIZE);
         const totalParts = fileChunks.length;
 
-        const initResponse = await fetch('YOUR_API_ENDPOINT/initiate-upload', {
+        const initResponse = await fetch('https://iu150pbrqd.execute-api.us-east-1.amazonaws.com/dev/v1/upload-to-kb/initiate-upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
+            resourcePath: "/initiate-upload",
             file_name: file.name,
             part_count: totalParts,
           }),
         });
-
-        return initResponse.json(); // Will return { upload_id, presigned_urls }
+        const data = initResponse.json()
+        console.log(data)
+        return data; // Will return { upload_id, presigned_urls }
       }));
 
       const allUploadIds = initResponses.map(response => response.upload_id);
@@ -66,31 +81,41 @@ const FileUploadMultipart = ({ onClose }: UploadProps) => {  // onClose comes fr
 
       // Step 2: Upload each part for each file
       const uploadPromises = selectedFiles.map((file, index) => {
+        
         const fileChunks = chunkFile(file, CHUNK_SIZE);
         const uploadId = allUploadIds[index];
+        console.log(uploadId)
         const presignedUrls = allPresignedUrls[index];
 
-        const uploadPartPromises = fileChunks.map((chunk, partIndex) => {
+        const uploadPartPromises = fileChunks.map(async (chunk, partIndex) => {
           const { part_number, url } = presignedUrls[partIndex];
 
-          return fetch(url, {
-            method: 'PUT',
-            body: chunk,
-          }).then((response) => {
-            if (!response.ok) throw new Error('Upload failed for part ' + part_number);
+          // Convert chunk to binary data (ArrayBuffer)
+          const binaryChunk = await chunkToBinary(chunk);
 
-            // Update progress for this file after each part is uploaded
-            updateProgress(file.name, ((partIndex + 1) / fileChunks.length) * 100);
-            return response.headers.get('ETag'); // Needed for the complete request
+          // Upload the part using raw binary data
+          const response = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/octet-stream' },
+            body: binaryChunk,  // Send raw chunk (not base64-encoded)
           });
+
+          if (!response.ok) {
+            throw new Error(`Upload failed for part ${partIndex + 1} of ${file.name}`);
+          }
+
+          // Update progress after each part is uploaded
+          updateProgress(file.name, ((partIndex + 1) / fileChunks.length) * 100);
+          return response.headers.get('ETag'); // Return ETag for the completed part
         });
 
         return Promise.all(uploadPartPromises).then((etags) => {
-          // Step 3: Complete multipart upload for each file
-          return fetch('YOUR_API_ENDPOINT/complete-upload', {
+          // Step 3: Complete the upload after all parts are uploaded
+          return fetch('https://iu150pbrqd.execute-api.us-east-1.amazonaws.com/dev/v1/upload-to-kb/complete-upload', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+              resourcePath: "/complete-upload",
               file_name: file.name,
               upload_id: uploadId,
               parts: etags.map((etag, partIndex) => ({
@@ -102,7 +127,7 @@ const FileUploadMultipart = ({ onClose }: UploadProps) => {  // onClose comes fr
         });
       });
 
-      // Track overall progress across all files
+      // Wait for all file uploads to finish
       await Promise.all(uploadPromises);
 
       alert('All uploads completed successfully');
@@ -115,8 +140,8 @@ const FileUploadMultipart = ({ onClose }: UploadProps) => {  // onClose comes fr
   };
 
   const handleCloseModal = () => {
-    setShowModal(false); // Close the modal after upload starts
-    onClose()
+    setShowModal(false);
+    onClose();
   };
 
   return (
@@ -134,7 +159,7 @@ const FileUploadMultipart = ({ onClose }: UploadProps) => {  // onClose comes fr
                     onChange={handleFileChange}
                     multiple
                     //@ts-ignore
-                    webkitdirectory="true" // Allow directories to be selected
+                    webkitdirectory="true"
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:border file:border-gray-300 file:rounded-md file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
                 </div>
@@ -150,7 +175,19 @@ const FileUploadMultipart = ({ onClose }: UploadProps) => {  // onClose comes fr
                 </div>
                 {uploading && (
                   <div className="mb-4">
-                    {/* Progress Bars for Multiple Files */}
+                    {/* Overall Progress Bar */}
+                    <div className="mb-4">
+                      <progress
+                        value={updateTotalProgress()}
+                        max="100"
+                        className="w-full h-2 rounded bg-gray-200"
+                      ></progress>
+                      <p className="text-center mt-2 text-sm">
+                        {updateTotalProgress().toFixed(2)}% complete
+                      </p>
+                    </div>
+
+                    {/* Progress Bars for Each File */}
                     {selectedFiles.map((file) => (
                       <div key={file.name} className="mb-2">
                         <p>{file.name}</p>
@@ -182,3 +219,5 @@ const FileUploadMultipart = ({ onClose }: UploadProps) => {  // onClose comes fr
 };
 
 export default FileUploadMultipart;
+
+

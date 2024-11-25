@@ -8,6 +8,32 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+// Token counting function
+let dailyTokenUsage = 0;
+let monthlyTokenUsage = 0;
+const TOKEN_COST_PER_1000 = 0.012; // Example cost in USD per 1000 tokens
+
+// Function to calculate cost
+function calculateCost(tokens: number): number {
+  return (tokens / 1000) * TOKEN_COST_PER_1000;
+}
+
+// Function to track token usage
+function trackTokenUsage(tokensUsed: number) {
+  dailyTokenUsage += tokensUsed;
+  monthlyTokenUsage += tokensUsed;
+  
+  console.log(`Tokens used in this request: ${tokensUsed}`);
+  console.log(`Total daily tokens used: ${dailyTokenUsage}`);
+  console.log(`Total monthly tokens used: ${monthlyTokenUsage}`);
+  
+  const cost = calculateCost(tokensUsed);
+  console.log(`Cost for this request: $${cost.toFixed(2)}`);
+  console.log(`Estimated daily cost: $${calculateCost(dailyTokenUsage).toFixed(2)}`);
+  console.log(`Estimated monthly cost: $${calculateCost(monthlyTokenUsage).toFixed(2)}`);
+}
+
+
 // Debug message helper function
 // Input: message string and optional data object
 // Output: JSON string with message, sanitized data, and timestamp
@@ -22,6 +48,7 @@ const debugMessage = (msg: string, data: any = {}) => {
 // This ensures type safety and validation for the AI's output
 const responseSchema = z.object({
   response: z.string(),
+  tokens: z.number(),
   thinking: z.string(),
   user_mood: z.enum([
     "positive",
@@ -231,7 +258,8 @@ export async function POST(req: Request) {
       system: systemPrompt,
       temperature: 0.3,
     });
-
+     // Log token usage if response.usage exists
+  
     measureTime("Claude Generation Complete");
     console.log(" Message generation completed");
 
@@ -251,12 +279,12 @@ export async function POST(req: Request) {
     }
 
     const validatedResponse = responseSchema.parse(parsedResponse);
-
+    const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;
     const responseWithId = {
       id: crypto.randomUUID(),
       ...validatedResponse,
     };
-
+   
     // Check if redirection to a human agent is needed
     if (responseWithId.redirect_to_agent?.should_redirect) {
       console.log(" AGENT REDIRECT TRIGGERED!");

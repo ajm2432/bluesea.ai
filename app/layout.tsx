@@ -7,8 +7,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "WavyLogic",
-  description: "AI by WavyLogic.ai",
+  title: "",
+  description: "AI by ",
 };
 
 export default function RootLayout({

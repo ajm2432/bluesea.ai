@@ -1,5 +1,5 @@
-# WavyLogic.ai
-![preview](tutorial/wavylogic.png)
+# 
+![preview](tutorial/.png)
 
 ## Key Features
 
