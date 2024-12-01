@@ -48,7 +48,6 @@ const debugMessage = (msg: string, data: any = {}) => {
 // This ensures type safety and validation for the AI's output
 const responseSchema = z.object({
   response: z.string(),
-  tokens: z.number(),
   thinking: z.string(),
   user_mood: z.enum([
     "positive",
@@ -280,6 +279,7 @@ export async function POST(req: Request) {
 
     const validatedResponse = responseSchema.parse(parsedResponse);
     const tokensUsed = response.usage.input_tokens + response.usage.output_tokens;
+    trackTokenUsage(tokensUsed);
     const responseWithId = {
       id: crypto.randomUUID(),
       ...validatedResponse,

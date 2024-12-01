@@ -319,8 +319,8 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
               <AvatarFallback>AI</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="text-sm font-medium leading-none">Tidal Wave</h3>
-              <p className="text-sm text-muted-foreground">Support</p>
+              {/* <h3 className="text-sm font-medium leading-none">Tidal Wave</h3>
+              <p className="text-sm text-muted-foreground">Support</p> */}
             </div>
           </>
         )}
@@ -414,11 +414,11 @@ function ChatArea() {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [selectedKnowledgeBase, setSelectedKnowledgeBase] = useState(
-    "XJIXBYKEMJ",
+    "6HIKLLSGSH",
   );
 
   const knowledgeBases: KnowledgeBase[] = [
-    { id: "XJIXBYKEMJ", name: "Knowledge Base" },
+    { id: "", name: "Knowledge Base" },
     // Add more knowledge bases as needed
   ];
 
