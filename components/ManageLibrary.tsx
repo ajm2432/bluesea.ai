@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import {
@@ -40,9 +40,54 @@ const ManageLibrary: React.FC<ManageLibraryProps> = ({
   onSaveChanges,
   onAddKnowledgebase,
 }) => {
-  const [collections, setCollections] = useState([
-    { id: 1, name: "Knowledge Base 1", items: 8 },
-  ]);
+  const [collections, setCollections] = useState<{ id: number; name: string; items: number }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [bucketNames, setBucketNames] = useState(["demo-data-asg4563", "another bucket"]); // Example of multiple bucket names
+
+  // Fetch collections data from the API for multiple buckets
+  useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        setLoading(true);
+
+        // Create an array of promises for each bucket name
+        const fetchPromises = bucketNames.map((bucketName) =>
+          fetch(
+            "https://iu150pbrqd.execute-api.us-east-1.amazonaws.com/dev/v1/get-knowledge",
+            {
+              method: "POST", // Use POST method
+              headers: {
+                "Content-Type": "application/json", // Ensure the request is JSON
+              },
+              body: JSON.stringify({
+                bucket_name: bucketName, // Pass each bucket_name dynamically
+              }),
+            }
+          ).then((response) => response.json())
+        );
+
+        // Wait for all fetch requests to complete
+        const results = await Promise.all(fetchPromises);
+
+        // Process each response
+        const newCollections = results
+          .filter((data) => data.status === "success") // Only include successful responses
+          .map((data, index) => ({
+            id: index + 1,
+            name: data.data.bucket_name,
+            items: data.data.object_count,
+          }));
+
+        setCollections(newCollections); // Update the state with the fetched collections
+      } catch (error) {
+        console.error("Error fetching collections:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCollections();
+  }, [bucketNames]); // Re-fetch when bucketNames changes
 
   return (
     <div className="flex flex-col items-center pt-10">
@@ -65,26 +110,33 @@ const ManageLibrary: React.FC<ManageLibraryProps> = ({
                 </Tr>
               </thead>
               <Tbody>
-                {collections.map((collection) => (
-                  <Tr key={collection.id} className="hover:bg-gray-100">
-                    <Td className="border-b py-4 px-6">{collection.name}</Td>
-                    <Td className="border-b py-4 px-6">{collection.items}</Td>
-                    <Td className="border-b py-4 px-6 text-right">
-                      {/* Dropdown Menu with 3 dots */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="p-1">
-                            <MoreHorizontal />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                          <DropdownMenuItem>Edit</DropdownMenuItem>
-                          <DropdownMenuItem>Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                {loading ? (
+                  <Tr>
+                    <Td className="border-b py-4 px-6" colSpan={3}>
+                      Loading collections...
                     </Td>
                   </Tr>
-                ))}
+                ) : (
+                  collections.map((collection) => (
+                    <Tr key={collection.id} className="hover:bg-gray-100">
+                      <Td className="border-b py-4 px-6">{collection.name}</Td>
+                      <Td className="border-b py-4 px-6">{collection.items}</Td>
+                      <Td className="border-b py-4 px-6 text-right">
+                        {/* Dropdown Menu with 3 dots */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="p-1">
+                              <MoreHorizontal />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem>Delete</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </Td>
+                    </Tr>
+                  ))
+                )}
               </Tbody>
             </Table>
           </div>
