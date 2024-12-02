@@ -41,9 +41,7 @@ const ManageLibrary: React.FC<ManageLibraryProps> = ({
   onAddKnowledgebase,
 }) => {
   const [collections, setCollections] = useState([
-    { id: 1, name: "Knowledge Base 1", items: 42 },
-    { id: 2, name: "Knowledge Base 2", items: 25 },
-    { id: 3, name: "Knowledge Base 3", items: 16 },
+    { id: 1, name: "Knowledge Base 1", items: 8 },
   ]);
 
   return (
@@ -53,7 +51,7 @@ const ManageLibrary: React.FC<ManageLibraryProps> = ({
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-semibold">Manage Library</h1>
             <Button className="gap-2" onClick={onAddKnowledgebase}>
-              Add New Knowledge Base
+              Add Knowledge
             </Button>
           </div>
 
