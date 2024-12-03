@@ -128,7 +128,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout, onManageLibraryClick })
             margin: 0,
           }}
         >
-          
+          SeasideSec AI Solutions
         </h2>
       </div>
       <div className="flex items-center gap-2">
