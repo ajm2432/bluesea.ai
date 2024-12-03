@@ -174,7 +174,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout, onManageLibraryClick })
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
@@ -195,7 +195,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout, onManageLibraryClick })
             </DropdownMenuItem>
           ))}
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
         {/* Manage Library Button, triggers the passed function to toggle visibility */}
         <Button variant="outline" onClick={onManageLibraryClick}>
           Manage Library

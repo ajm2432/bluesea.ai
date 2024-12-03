@@ -873,17 +873,9 @@ try {
     />
 
     <div className="flex justify-between items-center p-3">
-      <label htmlFor="file-upload" className="flex items-center cursor-pointer text-muted-foreground hover:text-primary">
-        <Upload className="h-6 w-6" />
-        <span>Upload PDF</span>
-      </label>
-      <input
-        id="file-upload"
-        type="file"
-        accept=".pdf"
-        className="hidden"
-        onChange={handleFileChange}
-      />
+      
+        <span></span>
+
 
       {/* PDF Icon and Filename */}
       {pdfFilename && (
