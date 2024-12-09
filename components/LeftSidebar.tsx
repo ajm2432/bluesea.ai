@@ -4,8 +4,11 @@ import {
   Settings, 
   HelpCircle, 
   ChevronRight, 
-  ChevronLeft 
+  ChevronLeft,
+  CandyCane,
+  Cannabis
 } from "lucide-react";
+import Link from "next/link";
 
 const LeftSidebar: React.FC = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -17,30 +20,48 @@ const LeftSidebar: React.FC = () => {
   const SidebarItem = ({ 
     icon: Icon, 
     label, 
-    isCollapsed 
+    isCollapsed, 
+    href, 
+    openInNewTab = false,
   }: { 
-    icon: React.ElementType, 
-    label: string, 
-    isCollapsed: boolean 
-  }) => (
-    <div 
-      className={`
-        flex items-center 
-        p-3 
-        hover:bg-gray-100 
-        cursor-pointer 
-        transition-all 
-        duration-300
-        ${isCollapsed ? 'justify-center' : 'justify-start'}
-      `}
-    >
-      <Icon className="w-5 h-5 mr-3" />
-      {!isCollapsed && <span className="text-sm">{label}</span>}
-    </div>
-  );
+    icon: React.ElementType; 
+    label: string; 
+    isCollapsed: boolean; 
+    href?: string; 
+    openInNewTab?: boolean; 
+  }) => {
+    const content = (
+      <div
+        className={`
+          flex items-center 
+          p-3 
+          hover:bg-gray-100 
+          cursor-pointer 
+          transition-all 
+          duration-300
+          ${isCollapsed ? 'justify-center' : 'justify-start'}
+        `}
+      >
+        <Icon className="w-5 h-5 mr-3" />
+        {!isCollapsed && <span className="text-sm">{label}</span>}
+      </div>
+    );
+
+    return href ? (
+      <a
+        href={href}
+        target={openInNewTab ? "_blank" : "_self"}
+        rel={openInNewTab ? "noopener noreferrer" : undefined}
+      >
+        {content}
+      </a>
+    ) : (
+      <div>{content}</div>
+    );
+  };
 
   return (
-    <aside 
+    <aside
       className={`
         bg-white 
         border-r 
@@ -63,18 +84,21 @@ const LeftSidebar: React.FC = () => {
 
       <nav className="mt-4">
         <SidebarItem 
-          icon={Home} 
-          label="Home" 
+          icon={CandyCane} 
+          label="Home"
+          href="/" 
           isCollapsed={isCollapsed} 
         />
-        <SidebarItem 
-          icon={Settings} 
+        {/* <SidebarItem 
+          icon={Cannabis} 
           label="Settings" 
           isCollapsed={isCollapsed} 
-        />
+        /> */}
         <SidebarItem 
           icon={HelpCircle} 
           label="Support" 
+          href="https://seasidesec.com" /// Navigate to Support
+          openInNewTab={true} // Open in new tab
           isCollapsed={isCollapsed} 
         />
       </nav>

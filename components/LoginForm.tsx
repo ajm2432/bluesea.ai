@@ -58,7 +58,7 @@ export default function LoginForm({
                                     color: isDarkMode ? '#000' : '#333',
                                 }}
                             >
-                                SeasideSec AI Solutions
+                                Seaside Software Solutions
                             </h2>
                         </div>
                         {error && <div style={styles.error}>{error}</div>}

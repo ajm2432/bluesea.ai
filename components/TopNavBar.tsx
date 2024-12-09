@@ -128,7 +128,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout, onManageLibraryClick })
             margin: 0,
           }}
         >
-          SeasideSec AI Solutions
+          Seaside Software Solutions
         </h2>
       </div>
       <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout, onManageLibraryClick })
             ))}
           </DropdownMenuContent>
         </DropdownMenu> */}
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="icon">
               <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -173,7 +173,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout, onManageLibraryClick })
               System
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
         {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
