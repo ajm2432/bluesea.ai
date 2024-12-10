@@ -52,14 +52,14 @@ export default function LoginForm({
                         <div style={styles.titleContainer}>
                             
                             <img src="/wave.png" alt="Wave" style={styles.logo} />
-                            <h2
-                                style={{
-                                    ...styles.title,
-                                    color: isDarkMode ? '#000' : '#333',
-                                }}
-                            >
-                                Seaside Software Solutions
-                            </h2>
+                            <div className="flex items-center space-x-2">
+                        <div className="text-xl font-bold text-blue-500 tracking-tight">
+                            Seaside
+                        </div>
+                        <div className="text-xl font-light text-gray-900 tracking-tight">
+                            Software Solutions
+                        </div>
+                        </div>
                         </div>
                         {error && <div style={styles.error}>{error}</div>}
                         <div style={styles.inputGroup}> 
