@@ -97,7 +97,7 @@ const ManageLibrary: React.FC<ManageLibraryProps> = ({
         <Card className="w-full max-w-5xl mx-auto">
           <CardContent className="flex-1 flex flex-col overflow-hidden pt-6 px-6 pb-4">
             <div className="flex justify-between items-center mb-6">
-              <h1 className="text-3xl font-semibold">Manage Library</h1>
+              <h1 className="text-3xl font-semibold">Manage Data</h1>
               <Button className="gap-2" onClick={onAddKnowledgebase}>
                 Add Knowledge
               </Button>

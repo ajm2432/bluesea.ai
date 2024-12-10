@@ -277,10 +277,10 @@ export default function Home() {
       <div>
         {isAuthenticated ? (
           <div>
-            <TopNavBar 
+            {/* <TopNavBar 
               onLogout={() => setIsAuthenticated(false)} 
               onManageLibraryClick={toggleManageLibrary} 
-            />
+            /> */}
             {showManageLibrary ? (
             <div style={{ width: '100%', height: '100vh' }}>
               <ManageLibrary 
