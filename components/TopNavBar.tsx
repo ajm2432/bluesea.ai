@@ -122,14 +122,12 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ onLogout, onManageLibraryClick })
           width={30}
           height={30}
         />
-        <h2
-          style={{
-            color: theme === "dark" ? "#fff" : "#333",
-            margin: 0,
-          }}
-        >
-          Seaside Software Solutions
-        </h2>
+        <div className="text-2xl font-bold text-blue-500 tracking-tight">
+        Seaside
+      </div>
+      <div className="text-2xl font-light text-gray-900 tracking-tight">
+        Software Solutions
+      </div>
       </div>
       <div className="flex items-center gap-2">
         {/* <DropdownMenu>

@@ -150,7 +150,7 @@ const styles = {
         padding: '0.5rem',
         borderRadius: '4px',
         border: 'none',
-        backgroundColor: '#007bff',
+        backgroundColor: '#3b82f6',
         marginBottom: '16px',
         color: 'white',
         fontSize: '16px',
